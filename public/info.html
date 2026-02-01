@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FFprobe Site - Info</title>
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: { extend: { fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] } } },
+      };
+    </script>
+  </head>
+
+  <body
+    class="font-sans antialiased bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-screen text-slate-100"
+  >
+    <nav class="sticky top-0 z-50 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-md">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-14 md:h-16">
+          <div class="flex items-center gap-6 md:gap-8">
+            <a
+              href="/"
+              class="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-400 via-blue-300 to-violet-400 bg-clip-text text-transparent hover:opacity-90 transition-opacity"
+            >
+              FFprobe Analyzer
+            </a>
+            <div class="hidden md:flex gap-1">
+              <a
+                href="/"
+                class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700/80 hover:text-white transition-colors duration-200"
+              >
+                Analyzer
+              </a>
+              <a
+                href="/info.html"
+                class="px-3 py-2 rounded-lg text-sm font-medium bg-slate-700 text-white ring-1 ring-slate-600"
+              >
+                Info
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mx-auto max-w-6xl px-4 py-8 md:py-12">
+      <div class="text-center mb-12 md:mb-14">
+        <h1
+          class="text-3xl md:text-5xl font-bold mb-3 tracking-tight bg-gradient-to-r from-blue-400 via-blue-300 to-violet-400 bg-clip-text text-transparent"
+        >
+          FFprobe Tracks Analyzer
+        </h1>
+        <p class="text-slate-400 text-base md:text-lg">Your own self-hosted media analysis tool</p>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2 md:gap-6 mb-12">
+        <div
+          class="rounded-2xl border border-slate-700/60 bg-slate-800/60 p-6 shadow-lg shadow-black/10 transition-colors hover:border-blue-500/60 hover:bg-slate-800/80"
+        >
+          <div class="mb-4 flex items-center gap-4">
+            <div
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600/90 text-white shadow-lg shadow-blue-900/30"
+            >
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path
+                  d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold md:text-xl">Modern Web Interface</h3>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Beautiful Tailwind CSS design with responsive layout. Dark theme optimized for
+            comfortable viewing.
+          </p>
+        </div>
+
+        <div
+          class="rounded-2xl border border-slate-700/60 bg-slate-800/60 p-6 shadow-lg shadow-black/10 transition-colors hover:border-violet-500/60 hover:bg-slate-800/80"
+        >
+          <div class="mb-4 flex items-center gap-4">
+            <div
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-600/90 text-white shadow-lg shadow-violet-900/30"
+            >
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path
+                  fill-rule="evenodd"
+                  d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold md:text-xl">TorrServer API</h3>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Direct integration with TorrServer's FFprobe API. Fast and reliable media analysis.
+          </p>
+        </div>
+
+        <div
+          class="rounded-2xl border border-slate-700/60 bg-slate-800/60 p-6 shadow-lg shadow-black/10 transition-colors hover:border-emerald-500/60 hover:bg-slate-800/80"
+        >
+          <div class="mb-4 flex items-center gap-4">
+            <div
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600/90 text-white shadow-lg shadow-emerald-900/30"
+            >
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path
+                  fill-rule="evenodd"
+                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold md:text-xl">HTTP API</h3>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Built-in Node.js HTTP API server. RESTful endpoint with secure proxying to TorrServer.
+            HTTPS ready via cloudflared.
+          </p>
+        </div>
+
+        <div
+          class="rounded-2xl border border-slate-700/60 bg-slate-800/60 p-6 shadow-lg shadow-black/10 transition-colors hover:border-amber-500/60 hover:bg-slate-800/80"
+        >
+          <div class="mb-4 flex items-center gap-4">
+            <div
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-600/90 text-white shadow-lg shadow-amber-900/30"
+            >
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path
+                  fill-rule="evenodd"
+                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold md:text-xl">Easy Deployment</h3>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Multiple deployment options: Docker, VPS, static hosting. Comprehensive guides included.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2 mb-12">
+        <a
+          href="/"
+          class="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 text-center font-semibold text-white shadow-lg shadow-blue-900/30 transition-all duration-200 hover:from-blue-500 hover:to-blue-600 hover:shadow-blue-900/40 active:scale-[0.98]"
+        >
+          Open Analyzer
+        </a>
+        <a
+          href="https://github.com/pavelpikta/lampa-torrents-tracks"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-5 text-center font-semibold text-white shadow-lg shadow-emerald-900/30 transition-all duration-200 hover:from-emerald-500 hover:to-emerald-600 hover:shadow-emerald-900/40 active:scale-[0.98]"
+        >
+          Documentation
+        </a>
+      </div>
+
+      <div class="space-y-6">
+        <div
+          class="rounded-2xl border border-slate-700/60 bg-slate-800/60 p-6 shadow-lg shadow-black/10"
+        >
+          <h2 class="mb-5 text-xl font-bold md:text-2xl">Architecture</h2>
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="rounded-xl border border-slate-600/60 bg-slate-900/50 p-4">
+              <h3 class="mb-2 font-semibold text-blue-400">Frontend (Port 3000)</h3>
+              <ul class="space-y-1.5 text-sm text-slate-400">
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Modern HTML5 interface
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Tailwind CSS styling
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Responsive design
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Collapsible sections
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Copy to clipboard
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> HTTP API integration
+                </li>
+              </ul>
+            </div>
+            <div class="rounded-xl border border-slate-600/60 bg-slate-900/50 p-4">
+              <h3 class="mb-2 font-semibold text-violet-400">Backend (Port 3000)</h3>
+              <ul class="space-y-1.5 text-sm text-slate-400">
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Node.js HTTP API server
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> TorrServer proxy
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> HTTP Basic Auth support
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Docker ready
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> HTTPS via cloudflared
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="text-emerald-400">✓</span> Health check endpoint
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="rounded-2xl border border-slate-700/60 bg-slate-800/60 p-6 shadow-lg shadow-black/10"
+        >
+          <h2 class="mb-5 text-xl font-bold md:text-2xl">Track Analysis Features</h2>
+          <div class="grid gap-5 md:grid-cols-3">
+            <div class="rounded-xl border border-violet-600/40 bg-violet-950/30 p-4">
+              <h3 class="mb-2 font-semibold text-violet-300">Video Tracks</h3>
+              <ul class="space-y-1 text-sm text-slate-400">
+                <li>• Codec information</li>
+                <li>• Resolution</li>
+                <li>• Bitrate</li>
+                <li>• Frame rate</li>
+                <li>• Duration</li>
+              </ul>
+            </div>
+            <div class="rounded-xl border border-blue-600/40 bg-blue-950/30 p-4">
+              <h3 class="mb-2 font-semibold text-blue-300">Audio Tracks</h3>
+              <ul class="space-y-1 text-sm text-slate-400">
+                <li>• Language</li>
+                <li>• Codec</li>
+                <li>• Channel layout</li>
+                <li>• Bitrate</li>
+                <li>• Sample rate</li>
+              </ul>
+            </div>
+            <div class="rounded-xl border border-emerald-600/40 bg-emerald-950/30 p-4">
+              <h3 class="mb-2 font-semibold text-emerald-300">Subtitles</h3>
+              <ul class="space-y-1 text-sm text-slate-400">
+                <li>• Language</li>
+                <li>• Codec format</li>
+                <li>• Track title</li>
+                <li>• Track number</li>
+                <li>• Availability</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="rounded-2xl border border-slate-700/60 bg-slate-800/60 p-6 shadow-lg shadow-black/10"
+        >
+          <h2 class="mb-5 text-xl font-bold md:text-2xl">Documentation</h2>
+          <div class="space-y-4">
+            <div
+              class="rounded-xl border border-slate-600/60 bg-slate-900/60 p-4 transition-colors hover:border-blue-500/50"
+            >
+              <h3 class="mb-2 font-semibold text-blue-400">README.md</h3>
+              <p class="mb-2 text-sm text-slate-400">
+                Complete documentation with features, configuration, and API reference.
+              </p>
+              <ul class="ml-4 space-y-1 text-xs text-slate-500">
+                <li>• Quick Start guide</li>
+                <li>• Architecture overview</li>
+                <li>• WebSocket API documentation</li>
+                <li>• Configuration options</li>
+              </ul>
+            </div>
+            <div
+              class="rounded-xl border border-slate-600/60 bg-slate-900/60 p-4 transition-colors hover:border-emerald-500/50"
+            >
+              <h3 class="mb-2 font-semibold text-emerald-400">QUICKSTART.md</h3>
+              <p class="mb-2 text-sm text-slate-400">
+                Get started in 5 minutes with simple setup instructions.
+              </p>
+              <ul class="ml-4 space-y-1 text-xs text-slate-500">
+                <li>• Installation steps</li>
+                <li>• How to run the server</li>
+                <li>• Basic usage examples</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="rounded-2xl border border-blue-600/30 bg-gradient-to-r from-blue-950/40 to-violet-950/40 p-6 shadow-lg shadow-black/10"
+        >
+          <h2 class="mb-5 text-xl font-bold md:text-2xl">Getting Started</h2>
+          <div class="space-y-4">
+            <div class="flex items-start gap-4">
+              <span
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white shadow-lg shadow-blue-900/40"
+                >1</span
+              >
+              <div>
+                <h3 class="font-semibold text-slate-200">Start the Server</h3>
+                <p class="mt-0.5 text-sm text-slate-400">
+                  <code class="rounded bg-slate-800/80 px-1.5 py-0.5 font-mono text-emerald-400"
+                    >npm install && npm start</code
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <span
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white shadow-lg shadow-blue-900/40"
+                >2</span
+              >
+              <div>
+                <h3 class="font-semibold text-slate-200">Open Analyzer</h3>
+                <p class="mt-0.5 text-sm text-slate-400">
+                  Go to
+                  <code class="rounded bg-slate-800/80 px-1.5 py-0.5 font-mono text-emerald-400"
+                    >http://localhost:3000</code
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <span
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white shadow-lg shadow-blue-900/40"
+                >3</span
+              >
+              <div>
+                <h3 class="font-semibold text-slate-200">Analyze Media</h3>
+                <p class="mt-0.5 text-sm text-slate-400">
+                  Enter torrent hash or magnet link and click Analyze.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-14 text-center text-sm text-slate-500">
+        <p>Built for TorrServer • Tailwind CSS • Open Source MIT License</p>
+      </div>
+    </div>
+  </body>
+</html>

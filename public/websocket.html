@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FFprobe WebSocket Service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen text-gray-100">
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center space-x-8">
+            <a
+              href="/"
+              class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"
+            >
+              FFprobe Analyzer
+            </a>
+            <div class="hidden md:flex space-x-4">
+              <a
+                href="/"
+                class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition"
+              >
+                Analyzer
+              </a>
+              <a
+                href="/info.html"
+                class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition"
+              >
+                Info
+              </a>
+              <a
+                href="/websocket.html"
+                class="px-3 py-2 rounded-md text-sm font-medium bg-gray-700 text-white"
+              >
+                WebSocket
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <div class="text-center mb-8">
+        <h1
+          class="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"
+        >
+          FFprobe WebSocket Service
+        </h1>
+        <p class="text-gray-400 text-sm md:text-base">WebSocket proxy for TorrServer FFprobe API</p>
+      </div>
+
+      <div class="bg-gray-800 rounded-lg shadow-2xl p-6 mb-8 border border-gray-700">
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-semibold mb-2">Service Status</h2>
+            <p class="text-gray-400 text-sm">WebSocket server for FFprobe API proxy</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+              <p class="text-xs text-gray-400 mb-2">HTTP Server</p>
+              <p class="text-sm font-semibold" id="httpStatus">
+                <svg
+                  class="w-4 h-4 inline mr-2 animate-pulse"
+                  fill="currentColor"
+                  viewBox="0 0 8 8"
+                >
+                  <circle cx="4" cy="4" r="3" /></svg
+                >Checking...
+              </p>
+            </div>
+            <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+              <p class="text-xs text-gray-400 mb-2">WebSocket Server</p>
+              <p class="text-sm font-semibold" id="wsStatus">
+                <svg
+                  class="w-4 h-4 inline mr-2 animate-pulse"
+                  fill="currentColor"
+                  viewBox="0 0 8 8"
+                >
+                  <circle cx="4" cy="4" r="3" /></svg
+                >Checking...
+              </p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+              <p class="text-xs text-gray-400 mb-2">HTTP Port</p>
+              <p class="text-lg font-bold text-blue-400" id="httpPort">3000</p>
+            </div>
+            <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+              <p class="text-xs text-gray-400 mb-2">WebSocket Port</p>
+              <p class="text-lg font-bold text-blue-400" id="wsPort">8080</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 rounded-lg shadow-2xl p-6 mb-8 border border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Server Information</h2>
+
+        <div class="space-y-4">
+          <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-300 mb-2">HTTP Server</h3>
+            <p class="text-gray-400 text-sm">
+              Access analyzer at <span class="text-green-400 font-mono">http://localhost:3000</span>
+            </p>
+            <p class="text-gray-500 text-xs mt-2">Serves static files (HTML, CSS, JS)</p>
+          </div>
+
+          <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-300 mb-2">WebSocket Server</h3>
+            <p class="text-gray-400 text-sm">
+              Connection URL: <span class="text-green-400 font-mono">ws://localhost:8080</span>
+            </p>
+            <p class="text-gray-500 text-xs mt-2">Proxies requests to TorrServer FFprobe API</p>
+          </div>
+
+          <div class="bg-blue-900/20 rounded-lg p-4 border border-blue-700/30">
+            <h3 class="text-sm font-semibold text-blue-400 mb-2">Connection Format</h3>
+            <code class="text-xs text-blue-300 font-mono break-all"
+              >ws://localhost:8080/?{hash}&index={index}</code
+            >
+            <p class="text-blue-400 text-xs mt-2">
+              Example: <span class="text-blue-300">ws://localhost:8080/?abc123def456&index=1</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 rounded-lg shadow-2xl p-6 mb-8 border border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Quick Start</h2>
+
+        <div class="space-y-4">
+          <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-300 mb-2">1. Open the Web App</h3>
+            <p class="text-gray-400 text-sm">
+              Click <a href="/" class="text-blue-400 hover:text-blue-300">Analyzer</a> or open
+              <span class="text-green-400 font-mono">http://localhost:3000</span>
+            </p>
+          </div>
+
+          <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-300 mb-2">2. Enter Torrent Hash</h3>
+            <p class="text-gray-400 text-sm">Paste a torrent hash or magnet link</p>
+          </div>
+
+          <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-300 mb-2">3. Analyze</h3>
+            <p class="text-gray-400 text-sm">
+              Click Analyze button - WebSocket will fetch media streams from TorrServer
+            </p>
+          </div>
+
+          <div class="bg-green-900/20 rounded-lg p-4 border border-green-700/30">
+            <div class="flex">
+              <svg
+                class="h-5 w-5 text-green-400 mr-2 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <div>
+                <h4 class="text-green-400 font-semibold text-sm mb-1">Server Running</h4>
+                <p class="text-green-300 text-xs">
+                  Your Node.js WebSocket server is properly configured and ready to handle requests!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function checkServerStatus() {
+          fetch('http://localhost:3000/')
+            .then(() => {
+              document.getElementById('httpStatus').innerHTML =
+                '<svg class="w-4 h-4 inline mr-2 text-green-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>Running';
+            })
+            .catch(() => {
+              document.getElementById('httpStatus').innerHTML =
+                '<svg class="w-4 h-4 inline mr-2 text-red-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>Stopped';
+            });
+
+          const ws = new WebSocket('ws://localhost:8080');
+          ws.onopen = () => {
+            document.getElementById('wsStatus').innerHTML =
+              '<svg class="w-4 h-4 inline mr-2 text-green-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>Running';
+            ws.close();
+          };
+          ws.onerror = () => {
+            document.getElementById('wsStatus').innerHTML =
+              '<svg class="w-4 h-4 inline mr-2 text-red-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>Stopped';
+          };
+        }
+
+        document.addEventListener('DOMContentLoaded', checkServerStatus);
+      </script>
+    </div>
+  </body>
+</html>
