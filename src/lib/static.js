@@ -26,13 +26,15 @@ function serveStatic(httpRes, pathname, baseDir, cacheFiles = []) {
   const normalized =
     pathname === '/' || pathname === ''
       ? 'index.html'
-      : path
-          .normalize(pathname)
-          .replace(/^(\.\.(\/|\\))+/i, '')
+      : pathname
+          .replace(/\\/g, '/')
+          .replace(/^(\.\.(\/))+/, '')
           .replace(/^\/+/, '');
-  const filePath = path.resolve(baseDir, normalized);
+  const filePath = path.join(baseDir, normalized);
   const relative = path.relative(baseDir, filePath);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+  const isOutside =
+    relative.startsWith('..') || path.isAbsolute(relative) || /^[a-zA-Z]:/.test(relative);
+  if (isOutside) {
     httpRes.writeHead(403, { 'Content-Type': 'application/json' });
     httpRes.end(JSON.stringify({ error: 'Forbidden' }));
     return;
