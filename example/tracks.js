@@ -8,17 +8,22 @@
     if (params.ffprobe && params.path.split('.').pop() !== 'mp4') {
       setTimeout(function () {
         callback({
-          streams: params.ffprobe
+          streams: params.ffprobe,
         });
       }, 200);
     } else {
-      var apiUrl = api_host + '/api/ffprobe?hash=' + encodeURIComponent(params.torrent_hash) + '&index=' + params.id;
+      var apiUrl =
+        api_host +
+        '/api/ffprobe?hash=' +
+        encodeURIComponent(params.torrent_hash) +
+        '&index=' +
+        params.id;
 
       fetch(apiUrl, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json'
-        }
+          Accept: 'application/json',
+        },
       })
         .then(function (response) {
           if (!response.ok) {
@@ -69,9 +74,10 @@
         });
         var minus = 1;
         log('Tracks', 'set tracks:', video_tracks.length);
-        if (parse_tracks.length !== video_tracks.length) parse_tracks = parse_tracks.filter(function (a) {
-          return a.codec_name !== 'dts';
-        });
+        if (parse_tracks.length !== video_tracks.length)
+          parse_tracks = parse_tracks.filter(function (a) {
+            return a.codec_name !== 'dts';
+          });
         parse_tracks = parse_tracks.filter(function (a) {
           return a.tags;
         });
@@ -83,10 +89,10 @@
             language: track.tags.language,
             label: track.tags.title || track.tags.handler_name,
             ghost: orig ? false : true,
-            selected: orig ? orig.selected == true || orig.enabled == true : false
+            selected: orig ? orig.selected == true || orig.enabled == true : false,
           };
           console.log('Tracks', 'tracks original', orig);
-          Object.defineProperty(elem, "enabled", {
+          Object.defineProperty(elem, 'enabled', {
             set: function set(v) {
               if (v) {
                 var aud = getTracks();
@@ -103,7 +109,7 @@
                 }
               }
             },
-            get: function get() { }
+            get: function get() {},
           });
           new_tracks.push(elem);
         });
@@ -118,9 +124,10 @@
         var parse_subs = inited_parse.streams.filter(function (a) {
           return a.codec_type == 'subtitle';
         });
-        var minus = inited_parse.streams.filter(function (a) {
-          return a.codec_type == 'audio';
-        }).length + 1;
+        var minus =
+          inited_parse.streams.filter(function (a) {
+            return a.codec_type == 'audio';
+          }).length + 1;
         log('Tracks', 'set subs:', video_subs.length);
         parse_subs = parse_subs.filter(function (a) {
           return a.tags;
@@ -133,10 +140,10 @@
             language: track.tags.language,
             label: track.tags.title || track.tags.handler_name,
             ghost: video_subs[track.index - minus] ? false : true,
-            selected: orig ? orig.selected == true || orig.mode == 'showing' : false
+            selected: orig ? orig.selected == true || orig.mode == 'showing' : false,
           };
           console.log('Tracks', 'subs original', orig);
-          Object.defineProperty(elem, "mode", {
+          Object.defineProperty(elem, 'mode', {
             set: function set(v) {
               if (v) {
                 var txt = getSubs();
@@ -153,7 +160,7 @@
                 }
               }
             },
-            get: function get() { }
+            get: function get() {},
           });
           new_subs.push(elem);
         });
@@ -175,8 +182,10 @@
 
     function canPlay() {
       log('Tracks', 'canplay video event');
-      if (webos_replace.tracks) setWebosTracks(webos_replace.tracks); else setTracks();
-      if (webos_replace.subs) setWebosSubs(webos_replace.subs); else setSubs();
+      if (webos_replace.tracks) setWebosTracks(webos_replace.tracks);
+      else setTracks();
+      if (webos_replace.subs) setWebosSubs(webos_replace.subs);
+      else setSubs();
       Lampa.PlayerVideo.listener.remove('canplay', canPlay);
     }
 
@@ -218,9 +227,10 @@
           return a.codec_type == 'subtitle';
         });
         log('Tracks', 'webos set subs:', video_subs.length);
-        if (parse_subs.length !== video_subs.length - 1) parse_subs = parse_subs.filter(function (a) {
-          return a.codec_name !== 'hdmv_pgs_subtitle';
-        });
+        if (parse_subs.length !== video_subs.length - 1)
+          parse_subs = parse_subs.filter(function (a) {
+            return a.codec_name !== 'hdmv_pgs_subtitle';
+          });
         parse_subs = parse_subs.filter(function (a) {
           return a.tags;
         });
@@ -254,8 +264,10 @@
         inited_parse = result;
 
         if (inited) {
-          if (webos_replace.subs) setWebosSubs(webos_replace.subs); else setSubs();
-          if (webos_replace.tracks) setWebosTracks(webos_replace.tracks); else setTracks();
+          if (webos_replace.subs) setWebosSubs(webos_replace.subs);
+          else setSubs();
+          if (webos_replace.tracks) setWebosTracks(webos_replace.tracks);
+          else setTracks();
         }
       });
     }
@@ -288,9 +300,23 @@
         var append = function append(name, fields) {
           if (fields.length) {
             var block = Lampa.Template.get('tracks_metainfo_block', {});
-            block.find('.tracks-metainfo__label').text(Lampa.Lang.translate(name == 'video' ? 'extensions_hpu_video' : name == 'audio' ? 'player_tracks' : 'player_' + name));
+            block
+              .find('.tracks-metainfo__label')
+              .text(
+                Lampa.Lang.translate(
+                  name == 'video'
+                    ? 'extensions_hpu_video'
+                    : name == 'audio'
+                      ? 'player_tracks'
+                      : 'player_' + name,
+                ),
+              );
             fields.forEach(function (data) {
-              var item = $('<div class="tracks-metainfo__item tracks-metainfo__item--' + name + ' selector"></div>');
+              var item = $(
+                '<div class="tracks-metainfo__item tracks-metainfo__item--' +
+                  name +
+                  ' selector"></div>',
+              );
               item.on('hover:focus', function (e) {
                 Lampa.Modal.scroll().update(item);
               });
@@ -327,23 +353,28 @@
             line.duration = new Date(v.duration * 1000).toISOString().slice(11, 19);
           } else if (v.tags) {
             if (v.tags.DURATION) {
-              line.duration = v.tags.DURATION ? v.tags.DURATION.split(".") : '';
+              line.duration = v.tags.DURATION ? v.tags.DURATION.split('.') : '';
               line.duration.pop();
-            } else if (v.tags["DURATION-eng"]) {
-              line.duration = v.tags["DURATION-eng"] ? v.tags["DURATION-eng"].split(".") : '';
+            } else if (v.tags['DURATION-eng']) {
+              line.duration = v.tags['DURATION-eng'] ? v.tags['DURATION-eng'].split('.') : '';
               line.duration.pop();
             }
           }
 
           if (v.codec_name) line.codec = v.codec_name.toUpperCase();
           if (Boolean(v.is_avc)) line.avc = 'AVC';
-          var bit = v.bit_rate ? v.bit_rate : v.tags && (v.tags.BPS || v.tags["BPS-eng"]) ? v.tags.BPS || v.tags["BPS-eng"] : '--';
-          line.rate = bit == '--' ? bit : Math.round(bit / 1000000) + ' ' + Lampa.Lang.translate('speed_mb');
+          var bit = v.bit_rate
+            ? v.bit_rate
+            : v.tags && (v.tags.BPS || v.tags['BPS-eng'])
+              ? v.tags.BPS || v.tags['BPS-eng']
+              : '--';
+          line.rate =
+            bit == '--' ? bit : Math.round(bit / 1000000) + ' ' + Lampa.Lang.translate('speed_mb');
           if (Lampa.Arrays.getKeys(line).length) video.push(line);
         });
         codec_audio.forEach(function (a, i) {
           var line = {
-            num: i + 1
+            num: i + 1,
           };
 
           if (a.tags) {
@@ -352,14 +383,23 @@
 
           line.name = a.tags ? a.tags.title || a.tags.handler_name : '';
           if (a.codec_name) line.codec = a.codec_name.toUpperCase();
-          if (a.channel_layout) line.channels = a.channel_layout.replace('(side)', '').replace('stereo', '2.0').replace('8 channels (FL+FR+FC+LFE+SL+SR+TFL+TFR)', '7.1');
-          var bit = a.bit_rate ? a.bit_rate : a.tags && (a.tags.BPS || a.tags["BPS-eng"]) ? a.tags.BPS || a.tags["BPS-eng"] : '--';
-          line.rate = bit == '--' ? bit : Math.round(bit / 1000) + ' ' + Lampa.Lang.translate('speed_kb');
+          if (a.channel_layout)
+            line.channels = a.channel_layout
+              .replace('(side)', '')
+              .replace('stereo', '2.0')
+              .replace('8 channels (FL+FR+FC+LFE+SL+SR+TFL+TFR)', '7.1');
+          var bit = a.bit_rate
+            ? a.bit_rate
+            : a.tags && (a.tags.BPS || a.tags['BPS-eng'])
+              ? a.tags.BPS || a.tags['BPS-eng']
+              : '--';
+          line.rate =
+            bit == '--' ? bit : Math.round(bit / 1000) + ' ' + Lampa.Lang.translate('speed_kb');
           if (Lampa.Arrays.getKeys(line).length) audio.push(line);
         });
         codec_subs.forEach(function (a, i) {
           var line = {
-            num: i + 1
+            num: i + 1,
           };
 
           if (a.tags) {
@@ -367,7 +407,12 @@
           }
 
           line.name = a.tags ? a.tags.title || a.tags.handler_name : '';
-          if (a.codec_name) line.codec = a.codec_name.toUpperCase().replace('SUBRIP', 'SRT').replace('HDMV_PGS_SUBTITLE', 'HDMV PGS').replace('MOV_TEXT', 'MOV TEXT');
+          if (a.codec_name)
+            line.codec = a.codec_name
+              .toUpperCase()
+              .replace('SUBRIP', 'SRT')
+              .replace('HDMV_PGS_SUBTITLE', 'HDMV PGS')
+              .replace('MOV_TEXT', 'MOV TEXT');
           if (Lampa.Arrays.getKeys(line).length) subs.push(line);
         });
         var html = Lampa.Template.get('tracks_metainfo', {});
@@ -396,10 +441,18 @@
       parseMetainfo(data);
     }
   });
-  Lampa.Template.add('tracks_loading', "\n    <div class=\"tracks-loading\">\n        <span>#{loading}...</span>\n    </div>\n");
-  Lampa.Template.add('tracks_metainfo', "\n    <div class=\"tracks-metainfo\"></div>\n");
-  Lampa.Template.add('tracks_metainfo_block', "\n    <div class=\"tracks-metainfo__line\">\n        <div class=\"tracks-metainfo__label\"></div>\n        <div class=\"tracks-metainfo__info\"></div>\n    </div>\n");
-  Lampa.Template.add('tracks_css', "\n    <style>\n    .tracks-loading{margin-top:1em;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;-moz-box-align:start;-ms-flex-align:start;align-items:flex-start}.tracks-loading:before{content:'';display:inline-block;width:1.3em;height:1.3em;background:url('./img/loader.svg') no-repeat 50% 50%;-webkit-background-size:contain;-moz-background-size:contain;-o-background-size:contain;background-size:contain;margin-right:.4em}.tracks-loading>span{font-size:1.1em;line-height:1.1}.tracks-metainfo{margin-top:1em}.tracks-metainfo__line+.tracks-metainfo__line{margin-top:2em}.tracks-metainfo__label{opacity:.5;font-weight:600}.tracks-metainfo__info{padding-top:1em;line-height:1.2}.tracks-metainfo__info>div{background-color:rgba(0,0,0,0.22);display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-border-radius:.3em;-moz-border-radius:.3em;border-radius:.3em;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}.tracks-metainfo__info>div.focus{background-color:rgba(255,255,255,0.06)}.tracks-metainfo__info>div>div{padding:1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}.tracks-metainfo__info>div>div:not(:last-child){padding-right:1.5em}.tracks-metainfo__info>div+div{margin-top:1em}.tracks-metainfo__column--video,.tracks-metainfo__column--name{margin-right:auto}.tracks-metainfo__column--num{min-width:3em;padding-right:0}.tracks-metainfo__column--rate{min-width:7em;text-align:right}.tracks-metainfo__column--channels{min-width:5em;text-align:right}\n    </style>\n");
+  Lampa.Template.add(
+    'tracks_loading',
+    '\n    <div class="tracks-loading">\n        <span>#{loading}...</span>\n    </div>\n',
+  );
+  Lampa.Template.add('tracks_metainfo', '\n    <div class="tracks-metainfo"></div>\n');
+  Lampa.Template.add(
+    'tracks_metainfo_block',
+    '\n    <div class="tracks-metainfo__line">\n        <div class="tracks-metainfo__label"></div>\n        <div class="tracks-metainfo__info"></div>\n    </div>\n',
+  );
+  Lampa.Template.add(
+    'tracks_css',
+    "\n    <style>\n    .tracks-loading{margin-top:1em;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;-moz-box-align:start;-ms-flex-align:start;align-items:flex-start}.tracks-loading:before{content:'';display:inline-block;width:1.3em;height:1.3em;background:url('./img/loader.svg') no-repeat 50% 50%;-webkit-background-size:contain;-moz-background-size:contain;-o-background-size:contain;background-size:contain;margin-right:.4em}.tracks-loading>span{font-size:1.1em;line-height:1.1}.tracks-metainfo{margin-top:1em}.tracks-metainfo__line+.tracks-metainfo__line{margin-top:2em}.tracks-metainfo__label{opacity:.5;font-weight:600}.tracks-metainfo__info{padding-top:1em;line-height:1.2}.tracks-metainfo__info>div{background-color:rgba(0,0,0,0.22);display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-border-radius:.3em;-moz-border-radius:.3em;border-radius:.3em;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}.tracks-metainfo__info>div.focus{background-color:rgba(255,255,255,0.06)}.tracks-metainfo__info>div>div{padding:1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}.tracks-metainfo__info>div>div:not(:last-child){padding-right:1.5em}.tracks-metainfo__info>div+div{margin-top:1em}.tracks-metainfo__column--video,.tracks-metainfo__column--name{margin-right:auto}.tracks-metainfo__column--num{min-width:3em;padding-right:0}.tracks-metainfo__column--rate{min-width:7em;text-align:right}.tracks-metainfo__column--channels{min-width:5em;text-align:right}\n    </style>\n",
+  );
   $('body').append(Lampa.Template.get('tracks_css', {}, true));
-
 })();
