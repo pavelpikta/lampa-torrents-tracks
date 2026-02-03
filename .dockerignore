@@ -49,8 +49,8 @@ tmp/
 logs/
 *.log
 
-# TorrServer (not needed in container)
-TorrServer/
+# Example files
+example/
 
 # Scripts (run on host, not in container)
 scripts/
