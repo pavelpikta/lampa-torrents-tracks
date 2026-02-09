@@ -41,12 +41,7 @@ function formatBitrate(bitrate) {
 
 function formatChannelLayout(layout) {
   if (!layout) return '';
-  return layout
-    .replace('(side)', '')
-    .replace('stereo', '2.0')
-    .replace('5.1', '5.1')
-    .replace('7.1', '7.1')
-    .trim();
+  return layout.replace('(side)', '').replace('stereo', '2.0').trim();
 }
 
 function extractHashFromMagnetOrHash(input) {
