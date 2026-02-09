@@ -1,2 +1,3 @@
 .github/**
+.releaserc.yaml
 docker-compose.yml
