@@ -132,7 +132,7 @@ jobs:
             type=raw,value=v${{ inputs.version }},enable=${{ inputs.version != '' }}
             type=ref,event=branch,enable=${{ inputs.version == '' }}
             type=sha,enable=${{ inputs.version == '' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' }}
             ${{ inputs.extra_raw_tags }}
           labels: |
             org.opencontainers.image.title=${{ inputs.image }}
