@@ -1,0 +1,51 @@
+---
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        type: boolean
+        description: "Dry-run mode"
+        required: true
+        default: true
+  schedule:
+    - cron: "0 0 * * 0"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.release.outputs.new_release_published }}
+      version: ${{ steps.release.outputs.new_release_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SEMANTIC_RELEASE_PAT }}
+
+      - name: Semantic Release
+        id: release
+        uses: cycjimmy/semantic-release-action@v6.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_PAT }}
+        with:
+          semantic_version: ${{ vars.SEMANTIC_VERSION }}
+          dry_run: ${{ inputs.dry_run || !github.event_name == 'schedule' }}
+          extra_plugins: |
+            @semantic-release/commit-analyzer
+            @semantic-release/release-notes-generator
+            @semantic-release/changelog
+            @semantic-release/git
+            @semantic-release/github
+            conventional-changelog-conventionalcommits
