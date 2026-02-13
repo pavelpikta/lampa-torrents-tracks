@@ -1,3 +1,4 @@
 .github/**
 .releaserc.yaml
 docker-compose.yml
+CHANGELOG.md
