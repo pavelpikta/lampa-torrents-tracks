@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.1](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v1.0.0...v1.0.1) (2026-02-13)
+
+### CI/CD
+
+* **deps:** bump docker/build-push-action from 6.18.0 to 6.19.2 ([#3](https://github.com/pavelpikta/lampa-torrents-tracks/issues/3)) ([fb68164](https://github.com/pavelpikta/lampa-torrents-tracks/commit/fb68164af0a501351f7dcfdbafe757397d0f947c))
+
+### Other
+
+* add `CHANGELOG.md` to Prettier ignore list ([2a78e85](https://github.com/pavelpikta/lampa-torrents-tracks/commit/2a78e855ed206befb5c182412d84175eeb05a4cc))
+
 ## [1.0.0](https://github.com/pavelpikta/lampa-torrents-tracks/compare/...v1.0.0) (2026-02-09)
 
 ### Bug Fixes
