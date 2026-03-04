@@ -29,16 +29,8 @@ function hideLoading() {
 
 function showError(message) {
   const errorTextElement = document.getElementById('errorText');
-  // Handle multi-line error messages (e.g., from error details)
-  if (message.includes('\n')) {
-    errorTextElement.innerHTML = message
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line)
-      .join('<br>');
-  } else {
-    errorTextElement.textContent = message;
-  }
+  errorTextElement.style.whiteSpace = 'pre-wrap';
+  errorTextElement.textContent = message;
   document.getElementById('errorMessage').classList.remove('hidden');
   document.getElementById('results').classList.add('hidden');
   hideLoading();
