@@ -107,7 +107,8 @@ class AppError extends Error {
  * Creates an error from HTTP status code
  */
 function createErrorFromStatus(statusCode, data = null, context = {}) {
-  const code = STATUS_TO_ERROR_CODE[statusCode] || ERROR_CODES.UNKNOWN_ERROR;
+  const { code: explicitCode, ...details } = context;
+  const code = explicitCode || STATUS_TO_ERROR_CODE[statusCode] || ERROR_CODES.UNKNOWN_ERROR;
   let message = ERROR_MESSAGES[code];
 
   // Try to extract error message from response data
@@ -122,7 +123,7 @@ function createErrorFromStatus(statusCode, data = null, context = {}) {
     }
   }
 
-  return new AppError(code, message, statusCode, context);
+  return new AppError(code, message, statusCode, details);
 }
 
 /**

@@ -39,8 +39,12 @@ function handleFFprobeResponse(httpRes, statusCode, data, config = {}) {
       const parseError = createErrorFromStatus(500, null, {
         originalError: error.message,
         code: ERROR_CODES.JSON_PARSE_ERROR,
+        metadataMaxAttempts,
+        metadataAttemptDelay,
+        hash: config.hash ? config.hash : undefined,
+        apiVersion: config.apiVersion,
       });
-      handleError(httpRes, parseError, logger);
+      handleError(httpRes, parseError, logger, config.apiVersion);
     }
   } else {
     // Use centralized error handling
@@ -48,8 +52,9 @@ function handleFFprobeResponse(httpRes, statusCode, data, config = {}) {
       metadataMaxAttempts,
       metadataAttemptDelay,
       hash: config.hash ? config.hash : undefined,
+      apiVersion: config.apiVersion,
     });
-    handleError(httpRes, error, logger);
+    handleError(httpRes, error, logger, config.apiVersion);
   }
 }
 
