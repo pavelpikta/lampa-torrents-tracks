@@ -80,9 +80,12 @@ function extractHashFromMagnetOrHash(input) {
   if (!input) return '';
 
   if (input.toLowerCase().startsWith('magnet:')) {
-    const match = input.match(/xt=urn:btih:([a-fA-F0-9]{40})/i);
+    const match = input.match(/xt=urn:btih:([a-fA-F0-9]{40}|[A-Za-z2-7]{32})/i);
     if (match && match[1]) {
-      return match[1].toLowerCase();
+      const raw = match[1];
+      if (/^[a-fA-F0-9]{40}$/i.test(raw)) return raw.toLowerCase();
+      if (/^[A-Za-z2-7]{32}$/.test(raw)) return raw.toUpperCase();
+      return '';
     }
     return ''; // Invalid magnet link
   }
@@ -90,6 +93,9 @@ function extractHashFromMagnetOrHash(input) {
   const trimmed = input.trim();
   if (/^[a-fA-F0-9]{40}$/i.test(trimmed)) {
     return trimmed.toLowerCase();
+  }
+  if (/^[A-Za-z2-7]{32}$/.test(trimmed)) {
+    return trimmed.toUpperCase();
   }
 
   return ''; // Invalid hash format
@@ -243,7 +249,10 @@ async function analyzeMedia() {
 
   torrentHash = extractHashFromMagnetOrHash(torrentHash);
 
-  if (!torrentHash || !/^[a-f0-9]{40}$/i.test(torrentHash)) {
+  if (
+    !torrentHash ||
+    (!/^[a-f0-9]{40}$/i.test(torrentHash) && !/^[A-Za-z2-7]{32}$/.test(torrentHash))
+  ) {
     showError('Invalid hash or magnet link. Please check your input.');
     return;
   }

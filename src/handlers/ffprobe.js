@@ -4,13 +4,18 @@
  * @param {Object} httpRes - HTTP response object
  * @param {number} statusCode - Status code from TorrServer
  * @param {string} data - Response body
- * @param {Object} config - Optional config (metadataMaxAttempts, metadataAttemptDelay, logger)
+ * @param {Object} config - Optional config (metadataMaxAttempts, metadataAttemptDelay, logger, cacheControlMaxAge)
  */
 const { handleError, createErrorFromStatus, ERROR_CODES } = require('../lib/errors');
 const { defaultLogger } = require('../lib/logger');
 
 function handleFFprobeResponse(httpRes, statusCode, data, config = {}) {
-  const { metadataMaxAttempts = 60, metadataAttemptDelay = 1000, logger = defaultLogger } = config;
+  const {
+    metadataMaxAttempts = 60,
+    metadataAttemptDelay = 1000,
+    logger = defaultLogger,
+    cacheControlMaxAge = 3600,
+  } = config;
 
   if (statusCode === 200) {
     try {
@@ -23,7 +28,7 @@ function handleFFprobeResponse(httpRes, statusCode, data, config = {}) {
 
       const headers = {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': `public, max-age=${cacheControlMaxAge}`,
         'Content-Length': Buffer.byteLength(data, 'utf8'),
       };
       if (config.apiVersion) {

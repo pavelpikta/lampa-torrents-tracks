@@ -58,7 +58,6 @@ function createTorrServerClient(options) {
       let totalLength = 0;
 
       res.on('data', (chunk) => {
-        if (totalLength >= TORRSERVER_RESPONSE_MAX_BYTES) return;
         totalLength += chunk.length;
         if (totalLength > TORRSERVER_RESPONSE_MAX_BYTES) {
           res.destroy();
@@ -86,12 +85,13 @@ function createTorrServerClient(options) {
         path,
         error: error.message,
         code: error.code,
+        stack: error.stack,
       });
       const appError = new AppError(
         ERROR_CODES.TORRSERVER_CONNECTION_FAILED,
-        `Failed to fetch data: ${error.message}`,
+        'Failed to fetch data from TorrServer',
         500,
-        { originalError: error.code },
+        { originalError: { message: error.message, code: error.code } },
       );
       once(500, JSON.stringify(appError.toJSON()));
     });
@@ -278,7 +278,14 @@ function createTorrServerClient(options) {
       if (list.timeoutId) clearTimeout(list.timeoutId);
       delete metadataWaiters[hash];
       list.callbacks.forEach(({ callback: cb }) => {
-        cb(statusCode, data);
+        try {
+          cb(statusCode, data);
+        } catch (err) {
+          logger.error('Error in metadata waiter callback (finishAll)', {
+            hash,
+            error: err.message,
+          });
+        }
       });
     }
 
@@ -289,7 +296,17 @@ function createTorrServerClient(options) {
       if (list.timeoutId) clearTimeout(list.timeoutId);
       delete metadataWaiters[hash];
       list.callbacks.forEach(({ index: idx, callback: cb }) => {
-        callFfpApi(hash, idx, cb);
+        callFfpApi(hash, idx, (statusCode, data) => {
+          try {
+            cb(statusCode, data);
+          } catch (err) {
+            logger.error('Error in metadata waiter callback (finishWithFfp)', {
+              hash,
+              index: idx,
+              error: err.message,
+            });
+          }
+        });
       });
     }
 

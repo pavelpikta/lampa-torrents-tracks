@@ -67,10 +67,14 @@ function createRequestHandler(config) {
   /**
    * Derive trusted client IP: when behind trusted proxies use X-Forwarded-For
    * (first public/non-private IP not in trusted list), otherwise socket.remoteAddress.
+   * X-Forwarded-For is only used when the immediate peer (remoteAddress) is in trustedProxySet.
    */
   function getClientIp(req) {
     const remote = normalizeIp(req.socket?.remoteAddress || '');
     if (trustedProxySet.size === 0) {
+      return remote || 'unknown';
+    }
+    if (!trustedProxySet.has(remote)) {
       return remote || 'unknown';
     }
     const xff = req.headers['x-forwarded-for'];
@@ -112,6 +116,7 @@ function createRequestHandler(config) {
     metadataMaxAttempts: TORRSERVER_METADATA_MAX_ATTEMPTS,
     metadataAttemptDelay: TORRSERVER_METADATA_ATTEMPT_DELAY,
     logger,
+    cacheControlMaxAge: Math.floor(CACHE_TTL_MS / 1000),
   };
 
   /**
