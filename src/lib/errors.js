@@ -31,6 +31,7 @@ const ERROR_CODES = {
   JSON_PARSE_ERROR: 'JSON_PARSE_ERROR',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR',
+  SERVICE_SHUTTING_DOWN: 'SERVICE_SHUTTING_DOWN',
 };
 
 /**
@@ -61,6 +62,7 @@ const ERROR_MESSAGES = {
   [ERROR_CODES.JSON_PARSE_ERROR]: 'Failed to parse server response',
   [ERROR_CODES.INTERNAL_ERROR]: 'An internal error occurred. Please try again later.',
   [ERROR_CODES.UNKNOWN_ERROR]: 'An unexpected error occurred',
+  [ERROR_CODES.SERVICE_SHUTTING_DOWN]: 'Service is shutting down',
 };
 
 /**

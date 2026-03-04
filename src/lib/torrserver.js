@@ -410,7 +410,7 @@ function createTorrServerClient(options) {
         if (entry.timeoutId) clearTimeout(entry.timeoutId);
         entry.callbacks.forEach(({ callback: cb }) => {
           try {
-            const error = new AppError(ERROR_CODES.METADATA_TIMEOUT, 'Service shutting down', 503);
+            const error = new AppError(ERROR_CODES.SERVICE_SHUTTING_DOWN, undefined, 503);
             cb(503, JSON.stringify(error.toJSON()));
           } catch {
             // ignore errors during shutdown
