@@ -3,6 +3,21 @@
  * Production-ready logging with timestamps and context.
  */
 
+const { inspect } = require('util');
+
+/**
+ * Safely serialize a value for logging. Handles circular references.
+ * @param {*} value - Value to serialize
+ * @returns {string} JSON or inspect representation
+ */
+function safeStringify(value) {
+  try {
+    return JSON.stringify(value);
+  } catch (e) {
+    return inspect(value, { depth: 4 });
+  }
+}
+
 const LOG_LEVELS = {
   ERROR: 0,
   WARN: 1,
@@ -66,7 +81,7 @@ class Logger {
     const line =
       Object.keys(context).length === 0
         ? `${prefix} ${message}`
-        : `${prefix} ${message} ${JSON.stringify(context)}`;
+        : `${prefix} ${message} ${safeStringify(context)}`;
 
     if (level <= LOG_LEVELS.WARN) {
       console.error(line);
