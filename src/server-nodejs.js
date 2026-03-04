@@ -12,6 +12,9 @@ config.printBanner();
 const requestHandler = createRequestHandler(config);
 const httpServer = http.createServer(requestHandler);
 
+let isShuttingDown = false;
+let forceShutdownTimeoutId = null;
+
 httpServer.listen(config.HTTP_PORT, () => {
   logger.info('HTTP/API server started', {
     port: config.HTTP_PORT,
@@ -23,16 +26,22 @@ httpServer.listen(config.HTTP_PORT, () => {
 });
 
 function shutdown(signal) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
   logger.info('Shutting down server...', { signal });
 
   // Force-shutdown guard: fires only if close callback never runs.
-  const forceShutdownTimeout = setTimeout(() => {
+  forceShutdownTimeoutId = setTimeout(() => {
     logger.warn('Forcing shutdown after timeout');
     process.exit(1);
   }, 10000);
 
   httpServer.close(() => {
-    clearTimeout(forceShutdownTimeout);
+    if (forceShutdownTimeoutId != null) {
+      clearTimeout(forceShutdownTimeoutId);
+      forceShutdownTimeoutId = null;
+    }
     logger.info('HTTP server closed');
 
     try {
