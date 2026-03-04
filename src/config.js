@@ -15,6 +15,15 @@ const TORRSERVER_RESPONSE_MAX_BYTES =
   parseEnvInt('TORRSERVER_RESPONSE_MAX_BYTES', 5 * 1024 * 1024) || 5 * 1024 * 1024; // 5MB default
 const STATIC_CACHE_FILES = ['index.html', 'app.js', 'info.html'];
 
+const CACHE_MAX_SIZE = parseEnvInt('CACHE_MAX_SIZE', 1000);
+const CACHE_TTL_MS = parseEnvInt('CACHE_TTL_MS', 3600000); // 1 hour default
+const CACHE_CLEANUP_INTERVAL_MS = parseEnvInt('CACHE_CLEANUP_INTERVAL_MS', 600000); // 10 minutes
+
+const RATE_LIMIT_MAX_REQUESTS = parseEnvInt('RATE_LIMIT_MAX_REQUESTS', 120); // per window per IP
+const RATE_LIMIT_WINDOW_MS = parseEnvInt('RATE_LIMIT_WINDOW_MS', 60000); // 1 minute window
+
+const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
+
 function printBanner() {
   console.log('Lampa Tracks FFprobe API Server');
   console.log('================================');
@@ -35,5 +44,11 @@ module.exports = {
   TORRSERVER_REQUEST_TIMEOUT_MS,
   TORRSERVER_RESPONSE_MAX_BYTES,
   STATIC_CACHE_FILES,
+  CACHE_MAX_SIZE,
+  CACHE_TTL_MS,
+  CACHE_CLEANUP_INTERVAL_MS,
+  RATE_LIMIT_MAX_REQUESTS,
+  RATE_LIMIT_WINDOW_MS,
+  LOG_LEVEL,
   printBanner,
 };

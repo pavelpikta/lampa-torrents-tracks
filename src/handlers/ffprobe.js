@@ -1,41 +1,55 @@
 /**
  * Handles FFprobe API response and sends appropriate HTTP response.
+ * Uses centralized error handling and structured logging.
  * @param {Object} httpRes - HTTP response object
  * @param {number} statusCode - Status code from TorrServer
  * @param {string} data - Response body
- * @param {Object} config - Optional config for logging (metadataMaxAttempts, metadataAttemptDelay)
+ * @param {Object} config - Optional config (metadataMaxAttempts, metadataAttemptDelay, logger)
  */
+const { handleError, createErrorFromStatus, ERROR_CODES } = require('../lib/errors');
+const { defaultLogger } = require('../lib/logger');
+
 function handleFFprobeResponse(httpRes, statusCode, data, config = {}) {
-  const { metadataMaxAttempts = 60, metadataAttemptDelay = 1000 } = config;
+  const { metadataMaxAttempts = 60, metadataAttemptDelay = 1000, logger = defaultLogger } = config;
 
   if (statusCode === 200) {
     try {
       const jsonData = JSON.parse(data);
-      console.log(`  ✓ Received ${jsonData.streams?.length || 0} streams`);
-      httpRes.writeHead(200, { 'Content-Type': 'application/json' });
+      const streamCount = jsonData.streams?.length || 0;
+      logger.info(`FFprobe response received`, {
+        streamCount,
+        hash: config.hash ? config.hash : undefined,
+      });
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=3600',
+        'Content-Length': Buffer.byteLength(data, 'utf8'),
+      };
+      if (config.apiVersion) {
+        headers['X-API-Version'] = config.apiVersion;
+      }
+      httpRes.writeHead(200, headers);
       httpRes.end(data);
     } catch (error) {
-      console.log(`  ✗ JSON parse error: ${error.message}`);
-      httpRes.writeHead(500, { 'Content-Type': 'application/json' });
-      httpRes.end(JSON.stringify({ error: 'Failed to parse response' }));
+      logger.error('JSON parse error in FFprobe response', {
+        error: error.message,
+        hash: config.hash ? config.hash : undefined,
+      });
+      const parseError = createErrorFromStatus(500, null, {
+        originalError: error.message,
+        code: ERROR_CODES.JSON_PARSE_ERROR,
+      });
+      handleError(httpRes, parseError, logger);
     }
-  } else if (statusCode === 401) {
-    console.log(`  ✗ Authentication failed`);
-    httpRes.writeHead(401, { 'Content-Type': 'application/json' });
-    httpRes.end(JSON.stringify({ error: 'Authentication failed. Check server credentials.' }));
-  } else if (statusCode === 408) {
-    const cfgMaxSec = Math.round((metadataMaxAttempts * metadataAttemptDelay) / 1000);
-    console.log(`  ✗ Timeout: Metadata not loaded within ${cfgMaxSec} seconds`);
-    httpRes.writeHead(408, { 'Content-Type': 'application/json' });
-    httpRes.end(data);
-  } else if (statusCode === 504) {
-    console.log(`  ✗ TorrServer request timeout`);
-    httpRes.writeHead(504, { 'Content-Type': 'application/json' });
-    httpRes.end(data);
   } else {
-    console.log(`  ✗ HTTP error: ${statusCode}`);
-    httpRes.writeHead(statusCode, { 'Content-Type': 'application/json' });
-    httpRes.end(data);
+    // Use centralized error handling
+    const error = createErrorFromStatus(statusCode, data, {
+      metadataMaxAttempts,
+      metadataAttemptDelay,
+      hash: config.hash ? config.hash : undefined,
+    });
+    handleError(httpRes, error, logger);
   }
 }
 

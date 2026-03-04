@@ -14,7 +14,7 @@
     } else {
       var apiUrl =
         api_host +
-        '/api/ffprobe?hash=' +
+        '/api/v1/tracks?hash=' +
         encodeURIComponent(params.torrent_hash) +
         '&index=' +
         params.id;

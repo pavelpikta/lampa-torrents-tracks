@@ -29,10 +29,17 @@ ENV TORRSERVER_METADATA_MAX_ATTEMPTS=60
 ENV TORRSERVER_METADATA_ATTEMPT_DELAY=1000
 ENV TORRSERVER_REQUEST_TIMEOUT_MS=60000
 ENV TORRSERVER_RESPONSE_MAX_BYTES=5242880
+ENV CACHE_MAX_SIZE=1000
+ENV CACHE_TTL_MS=3600000
+ENV CACHE_CLEANUP_INTERVAL_MS=600000
+ENV RATE_LIMIT_MAX_REQUESTS=120
+ENV RATE_LIMIT_WINDOW_MS=60000
+ENV LOG_LEVEL=INFO
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" || exit 1
+# Health check: accept 200 (ok) and 503 (degraded — TorrServer unreachable but our server is alive).
+# This prevents restart loops when TorrServer is temporarily unavailable.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 || r.statusCode === 503 ? 0 : 1)})" || exit 1
 
 # Switch to non-root user
 USER nodejs

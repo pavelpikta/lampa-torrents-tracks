@@ -1,19 +1,44 @@
 let mediaData = null;
-
-document.addEventListener('DOMContentLoaded', () => {});
+let _loadingTimerInterval = null;
+let _loadingStartTime = null;
 
 function showLoading() {
   document.getElementById('loadingIndicator').classList.remove('hidden');
   document.getElementById('errorMessage').classList.add('hidden');
   document.getElementById('results').classList.add('hidden');
+
+  _loadingStartTime = Date.now();
+  const timerEl = document.getElementById('loadingTimer');
+  if (timerEl) {
+    timerEl.textContent = '';
+    clearInterval(_loadingTimerInterval);
+    _loadingTimerInterval = setInterval(() => {
+      const elapsed = Math.round((Date.now() - _loadingStartTime) / 1000);
+      timerEl.textContent = `${elapsed}s`;
+    }, 1000);
+  }
 }
 
 function hideLoading() {
   document.getElementById('loadingIndicator').classList.add('hidden');
+  clearInterval(_loadingTimerInterval);
+  _loadingTimerInterval = null;
+  const timerEl = document.getElementById('loadingTimer');
+  if (timerEl) timerEl.textContent = '';
 }
 
 function showError(message) {
-  document.getElementById('errorText').textContent = message;
+  const errorTextElement = document.getElementById('errorText');
+  // Handle multi-line error messages (e.g., from error details)
+  if (message.includes('\n')) {
+    errorTextElement.innerHTML = message
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line)
+      .join('<br>');
+  } else {
+    errorTextElement.textContent = message;
+  }
   document.getElementById('errorMessage').classList.remove('hidden');
   document.getElementById('results').classList.add('hidden');
   hideLoading();
@@ -44,6 +69,21 @@ function formatChannelLayout(layout) {
   return layout.replace('(side)', '').replace('stereo', '2.0').trim();
 }
 
+/**
+ * Safely parses a fraction string (e.g., "30/1", "24000/1001") to a decimal number
+ * @param {string} fraction - Fraction string like "30/1" or "24000/1001"
+ * @returns {number|null} Parsed number or null if invalid
+ */
+function parseFraction(fraction) {
+  if (!fraction || typeof fraction !== 'string') return null;
+  const parts = fraction.split('/');
+  if (parts.length !== 2) return null;
+  const numerator = parseFloat(parts[0]);
+  const denominator = parseFloat(parts[1]);
+  if (isNaN(numerator) || isNaN(denominator) || denominator === 0) return null;
+  return numerator / denominator;
+}
+
 function extractHashFromMagnetOrHash(input) {
   if (!input) return '';
 
@@ -52,13 +92,15 @@ function extractHashFromMagnetOrHash(input) {
     if (match && match[1]) {
       return match[1].toLowerCase();
     }
+    return ''; // Invalid magnet link
   }
 
-  if (/^[a-fA-F0-9]{40}$/i.test(input.trim())) {
-    return input.trim().toLowerCase();
+  const trimmed = input.trim();
+  if (/^[a-fA-F0-9]{40}$/i.test(trimmed)) {
+    return trimmed.toLowerCase();
   }
 
-  return input.trim();
+  return ''; // Invalid hash format
 }
 
 function parseVideoTracks(streams) {
@@ -77,7 +119,7 @@ function parseVideoTracks(streams) {
     const codec = stream.codec_long_name || stream.codec_name.toUpperCase();
     const resolution = stream.width && stream.height ? `${stream.width}×${stream.height}` : '';
     const bitrate = stream.bit_rate || stream.tags?.BPS || stream.tags?.['BPS-eng'];
-    const fps = stream.r_frame_rate ? eval(stream.r_frame_rate).toFixed(2) : '';
+    const fps = stream.r_frame_rate ? parseFraction(stream.r_frame_rate)?.toFixed(2) || '' : '';
     const duration = stream.tags?.DURATION ? stream.tags.DURATION.split('.')[0] : '';
 
     html += `
@@ -209,7 +251,7 @@ async function analyzeMedia() {
 
   torrentHash = extractHashFromMagnetOrHash(torrentHash);
 
-  if (!torrentHash) {
+  if (!torrentHash || !/^[a-f0-9]{40}$/i.test(torrentHash)) {
     showError('Invalid hash or magnet link. Please check your input.');
     return;
   }
@@ -217,26 +259,51 @@ async function analyzeMedia() {
   showLoading();
 
   try {
-    const apiUrl = `/api/ffprobe-auto?hash=${encodeURIComponent(torrentHash)}&index=${fileIndex}`;
-
-    console.log('Fetching from API:', apiUrl);
+    const apiUrl = `/api/v1/tracks/auto?hash=${encodeURIComponent(torrentHash)}&index=${fileIndex}`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: { Accept: 'application/json' },
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      const errorCode = errorData.code || null;
+      const errorDetails = errorData.details || null;
+
+      // Provide a friendlier message for metadata timeout specifically
+      let errorMessage;
+      if (errorCode === 'METADATA_TIMEOUT') {
+        const elapsed = errorDetails?.elapsedSeconds
+          ? ` (waited ${errorDetails.elapsedSeconds}s)`
+          : '';
+        errorMessage =
+          `Torrent metadata not ready${elapsed}. The torrent may still be loading — ` +
+          'try again in a few seconds.';
+      } else {
+        errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+        if (errorCode) errorMessage += ` (${errorCode})`;
+        if (errorDetails && typeof errorDetails === 'string') errorMessage += `\n${errorDetails}`;
+      }
+
+      showError(errorMessage);
+      return;
     }
 
     const data = await response.json();
 
     if (data.error) {
-      showError(data.error);
+      // Handle structured error responses even for 200 OK responses
+      const errorCode = data.code || null;
+      const errorDetails = data.details || null;
+      let fullErrorMessage = data.error;
+      if (errorCode) {
+        fullErrorMessage += ` (${errorCode})`;
+      }
+      if (errorDetails && typeof errorDetails === 'string') {
+        fullErrorMessage += `\n${errorDetails}`;
+      }
+      showError(fullErrorMessage);
       return;
     }
 
@@ -257,7 +324,12 @@ async function analyzeMedia() {
     hideLoading();
   } catch (error) {
     console.error('Error:', error);
-    showError(`Failed to analyze media: ${error.message}`);
+    // Handle network errors and other exceptions
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      showError('Network error: Failed to connect to the server. Please check your connection.');
+    } else {
+      showError(`Failed to analyze media: ${error.message}`);
+    }
     hideLoading();
   }
 }

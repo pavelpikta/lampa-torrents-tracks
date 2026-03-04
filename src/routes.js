@@ -1,14 +1,19 @@
 const path = require('path');
 const validation = require('./lib/validation');
-const httpUtils = require('./lib/http-utils');
 const { createTorrServerClient } = require('./lib/torrserver');
 const staticServer = require('./lib/static');
 const ffprobeHandler = require('./handlers/ffprobe');
+const { handleError, AppError, ERROR_CODES } = require('./lib/errors');
+const { defaultLogger } = require('./lib/logger');
+const { createCache } = require('./lib/cache');
+const { createDeduplicator } = require('./lib/request-deduplication');
+const { RateLimiter } = require('./lib/rate-limiter');
+const { generateRequestId } = require('./lib/utils');
 
 /**
- * Creates the main HTTP request handler with CORS, routing, and static serving.
+ * Creates the main HTTP request handler with CORS, routing, rate limiting, and static serving.
  * @param {Object} config - App config (from config.js)
- * @returns {function(req, res)} Request handler
+ * @returns {function(req, res)} Request handler with .cleanup()
  */
 function createRequestHandler(config) {
   const {
@@ -20,6 +25,11 @@ function createRequestHandler(config) {
     TORRSERVER_METADATA_MAX_ATTEMPTS,
     TORRSERVER_METADATA_ATTEMPT_DELAY,
     STATIC_CACHE_FILES,
+    CACHE_MAX_SIZE,
+    CACHE_TTL_MS,
+    CACHE_CLEANUP_INTERVAL_MS,
+    RATE_LIMIT_MAX_REQUESTS,
+    RATE_LIMIT_WINDOW_MS,
   } = config;
 
   const torrserver = createTorrServerClient({
@@ -32,13 +42,200 @@ function createRequestHandler(config) {
     metadataAttemptDelay: TORRSERVER_METADATA_ATTEMPT_DELAY,
   });
 
+  const cache = createCache({ CACHE_MAX_SIZE, CACHE_TTL_MS, CACHE_CLEANUP_INTERVAL_MS });
+  const deduplicator = createDeduplicator();
+  const rateLimiter = new RateLimiter({
+    maxRequests: RATE_LIMIT_MAX_REQUESTS,
+    windowMs: RATE_LIMIT_WINDOW_MS,
+  });
+
   const baseDir = path.join(__dirname, '..', 'public');
+  const logger = defaultLogger;
   const ffprobeConfig = {
     metadataMaxAttempts: TORRSERVER_METADATA_MAX_ATTEMPTS,
     metadataAttemptDelay: TORRSERVER_METADATA_ATTEMPT_DELAY,
+    logger,
   };
 
-  return function requestHandler(req, httpRes) {
+  /**
+   * Attempts to cache a successful (200) FFprobe response.
+   * Logs a warning and skips caching if the data is not valid JSON.
+   */
+  function tryCacheResponse(hash, index, data) {
+    try {
+      JSON.parse(data);
+      cache.set(hash, index, data);
+    } catch (error) {
+      logger.warn('Failed to cache response (invalid JSON)', {
+        hash: hash,
+        index,
+        error: error.message,
+      });
+    }
+  }
+
+  /**
+   * Sends a cached JSON response with appropriate headers.
+   */
+  function sendCachedResponse(httpRes, cached, apiVersion) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=3600',
+      'X-Cache': 'HIT',
+      'Content-Length': Buffer.byteLength(cached),
+    };
+    if (apiVersion) headers['X-API-Version'] = apiVersion;
+    httpRes.writeHead(200, headers);
+    httpRes.end(cached);
+  }
+
+  /**
+   * Handles validation errors for request parameters.
+   */
+  function handleValidationError(httpRes, queryParams, apiVersion, requestId) {
+    if (!queryParams.get('hash')) {
+      handleError(
+        httpRes,
+        new AppError(ERROR_CODES.INVALID_HASH, 'Hash is required or invalid magnet link', 400),
+        logger,
+        apiVersion,
+        requestId,
+      );
+    } else {
+      handleError(
+        httpRes,
+        new AppError(
+          ERROR_CODES.INVALID_INDEX,
+          'Invalid index: must be a non-negative integer',
+          400,
+        ),
+        logger,
+        apiVersion,
+        requestId,
+      );
+    }
+  }
+
+  /**
+   * Parses and validates request parameters.
+   * @returns {{ hash, index, title }|null}
+   */
+  function parseRequestParams(queryParams) {
+    let hash = queryParams.get('hash') || '';
+    const indexRaw = queryParams.get('index') || '1';
+    const title = queryParams.get('title') || '';
+
+    const index = validation.validateIndex(indexRaw);
+    if (index === null) return null;
+
+    hash = validation.extractHashFromMagnet(hash);
+    if (!hash || !/^[a-f0-9]{40}$/i.test(hash)) return null;
+
+    return { hash, index, title };
+  }
+
+  /**
+   * Handles FFprobe request with caching and deduplication (torrent must already exist).
+   */
+  function handleFFprobeRequest(hash, index, httpRes, apiVersion = null) {
+    const cached = cache.get(hash, index);
+    if (cached) {
+      logger.info('Cache hit', { hash: hash, index, apiVersion });
+      sendCachedResponse(httpRes, cached, apiVersion);
+      return;
+    }
+
+    deduplicator.execute(
+      hash,
+      index,
+      (callback) => {
+        torrserver.callFfpApi(hash, index, (statusCode, data) => {
+          if (statusCode === 200) tryCacheResponse(hash, index, data);
+          callback(statusCode, data);
+        });
+      },
+      (statusCode, data) => {
+        ffprobeHandler.handleFFprobeResponse(httpRes, statusCode, data, {
+          ...ffprobeConfig,
+          hash,
+          apiVersion,
+        });
+      },
+    );
+  }
+
+  /**
+   * Handles FFprobe-auto request with caching, deduplication, and torrent management.
+   */
+  function handleFFprobeAutoRequest(hash, index, title, httpRes, apiVersion = null) {
+    const cached = cache.get(hash, index);
+    if (cached) {
+      logger.info('Cache hit (auto)', { hash: hash, index, apiVersion });
+      sendCachedResponse(httpRes, cached, apiVersion);
+      return;
+    }
+
+    deduplicator.execute(
+      hash,
+      index,
+      (callback) => {
+        torrserver.checkTorrentExists(hash, (exists) => {
+          if (exists) {
+            logger.debug('Torrent exists, calling FFprobe', { hash: hash });
+            torrserver.callFfpApi(hash, index, (statusCode, data) => {
+              if (statusCode === 200) tryCacheResponse(hash, index, data);
+              callback(statusCode, data);
+            });
+            return;
+          }
+
+          torrserver.addTorrent(hash, title, (success, result) => {
+            if (!success) {
+              logger.error('Failed to add torrent', { hash: hash });
+              const error = new AppError(
+                ERROR_CODES.TORRENT_ADD_FAILED,
+                'Failed to add torrent to TorrServer',
+                400,
+                { hint: 'Check if hash is valid and TorrServer is accessible' },
+              );
+              callback(400, JSON.stringify(error.toJSON()));
+              return;
+            }
+
+            const onFfpResult = (statusCode, data) => {
+              if (statusCode === 200) tryCacheResponse(hash, index, data);
+              callback(statusCode, data);
+            };
+
+            if (torrserver.hasFileStats(result)) {
+              logger.debug('Torrent added, metadata ready', { hash: hash });
+              torrserver.callFfpApi(hash, index, onFfpResult);
+              return;
+            }
+
+            const maxWaitSec = Math.round(
+              (TORRSERVER_METADATA_MAX_ATTEMPTS * TORRSERVER_METADATA_ATTEMPT_DELAY) / 1000,
+            );
+            logger.info(`Waiting for metadata (max ${maxWaitSec}s)`, {
+              hash: hash,
+            });
+            torrserver.waitForMetadataThenFfp(hash, index, onFfpResult);
+          });
+        });
+      },
+      (statusCode, data) => {
+        ffprobeHandler.handleFFprobeResponse(httpRes, statusCode, data, {
+          ...ffprobeConfig,
+          hash,
+          apiVersion,
+        });
+      },
+    );
+  }
+
+  function requestHandler(req, httpRes) {
+    const requestId = generateRequestId();
+    httpRes.setHeader('X-Request-ID', requestId);
     httpRes.setHeader('Access-Control-Allow-Origin', '*');
     httpRes.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     httpRes.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -52,111 +249,117 @@ function createRequestHandler(config) {
     let reqUrl;
     try {
       reqUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-    } catch {
-      httpRes.writeHead(400, { 'Content-Type': 'application/json' });
-      httpRes.end(JSON.stringify({ error: 'Bad request URL' }));
+    } catch (error) {
+      logger.warn('Invalid request URL', { requestId, url: req.url, error: error.message });
+      handleError(
+        httpRes,
+        new AppError(ERROR_CODES.INVALID_URL, 'Bad request URL', 400),
+        logger,
+        null,
+        requestId,
+      );
       return;
     }
     const pathname = reqUrl.pathname;
 
-    if (pathname === '/health') {
-      httpRes.writeHead(200, { 'Content-Type': 'application/json' });
-      httpRes.end(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }));
-      return;
-    }
-
-    if (pathname === '/api/ffprobe' && req.method === 'GET') {
-      const queryParams = reqUrl.searchParams;
-      let hash = queryParams.get('hash') || '';
-      const indexRaw = queryParams.get('index') || '1';
-
-      const index = validation.validateIndex(indexRaw);
-      if (index === null) {
-        httpUtils.sendJsonError(httpRes, 400, 'Invalid index: must be a non-negative integer');
-        return;
-      }
-
-      console.log(
-        `[${new Date().toISOString()}] FFprobe (direct): ${hash.substring(0, 8)}... (index: ${index})`,
-      );
-
-      hash = validation.extractHashFromMagnet(hash);
-
-      if (!hash) {
-        httpUtils.sendJsonError(httpRes, 400, 'Hash is required or invalid magnet link');
-        return;
-      }
-
-      torrserver.callFfpApi(hash, index, (statusCode, data) => {
-        ffprobeHandler.handleFFprobeResponse(httpRes, statusCode, data, ffprobeConfig);
-      });
-      return;
-    }
-
-    if (pathname === '/api/ffprobe-auto' && req.method === 'GET') {
-      const queryParams = reqUrl.searchParams;
-      let hash = queryParams.get('hash') || '';
-      const indexRaw = queryParams.get('index') || '1';
-      const title = queryParams.get('title') || '';
-
-      const index = validation.validateIndex(indexRaw);
-      if (index === null) {
-        httpUtils.sendJsonError(httpRes, 400, 'Invalid index: must be a non-negative integer');
-        return;
-      }
-
-      console.log(
-        `[${new Date().toISOString()}] FFprobe-auto: ${hash.substring(0, 8)}... (index: ${index})`,
-      );
-
-      hash = validation.extractHashFromMagnet(hash);
-
-      if (!hash) {
-        httpUtils.sendJsonError(httpRes, 400, 'Hash is required or invalid magnet link');
-        return;
-      }
-
-      torrserver.checkTorrentExists(hash, (exists) => {
-        if (exists) {
-          console.log(`  Torrent found. Calling /ffp`);
-          torrserver.callFfpApi(hash, index, (statusCode, data) => {
-            ffprobeHandler.handleFFprobeResponse(httpRes, statusCode, data, ffprobeConfig);
-          });
-          return;
-        }
-
-        torrserver.addTorrent(hash, title, (success, result) => {
-          if (!success) {
-            console.log(`  ✗ Failed to add torrent`);
-            httpUtils.sendJsonError(httpRes, 400, 'Failed to add torrent to TorrServer', {
-              hash,
-              details: 'Check if hash is valid and TorrServer is accessible',
-            });
-            return;
-          }
-
-          if (torrserver.hasFileStats(result)) {
-            console.log(`  Torrent added, metadata ready. Calling /ffp`);
-            torrserver.callFfpApi(hash, index, (statusCode, data) => {
-              ffprobeHandler.handleFFprobeResponse(httpRes, statusCode, data, ffprobeConfig);
-            });
-            return;
-          }
-
-          const maxWaitSec = Math.round(
-            (TORRSERVER_METADATA_MAX_ATTEMPTS * TORRSERVER_METADATA_ATTEMPT_DELAY) / 1000,
-          );
-          console.log(`  ⏳ Waiting for metadata (max ${maxWaitSec}s), then calling /ffp`);
-          torrserver.waitForMetadataThenFfp(hash, index, (statusCode, data) => {
-            ffprobeHandler.handleFFprobeResponse(httpRes, statusCode, data, ffprobeConfig);
-          });
+    // Rate limiting applies to API endpoints only
+    if (pathname.startsWith('/api/')) {
+      const ip =
+        req.headers['x-forwarded-for']?.split(',')[0].trim() ||
+        req.socket?.remoteAddress ||
+        'unknown';
+      if (!rateLimiter.isAllowed(ip)) {
+        logger.warn('Rate limit exceeded', { requestId, ip });
+        const body = JSON.stringify({
+          error: 'Too many requests. Please slow down.',
+          code: 'RATE_LIMIT_EXCEEDED',
         });
+        httpRes.writeHead(429, {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+          'Retry-After': String(Math.ceil(RATE_LIMIT_WINDOW_MS / 1000)),
+        });
+        httpRes.end(body);
+        return;
+      }
+    }
+
+    if (pathname === '/health') {
+      torrserver.ping((reachable, tsStatusCode) => {
+        const cacheStats = cache.getStats();
+        const dedupStats = deduplicator.getStats();
+        const body = JSON.stringify({
+          status: reachable ? 'ok' : 'degraded',
+          timestamp: new Date().toISOString(),
+          torrserver: { reachable, ...(reachable ? {} : { statusCode: tsStatusCode }) },
+          api: {
+            version: '1.0.0',
+            endpoints: {
+              v1: { tracks: '/api/v1/tracks', tracksAuto: '/api/v1/tracks/auto' },
+            },
+          },
+          cache: cacheStats,
+          deduplication: dedupStats,
+        });
+        httpRes.writeHead(reachable ? 200 : 503, {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        });
+        httpRes.end(body);
       });
+      return;
+    }
+
+    if (pathname === '/api/v1/tracks' && req.method === 'GET') {
+      const queryParams = reqUrl.searchParams;
+      const params = parseRequestParams(queryParams);
+
+      if (!params) {
+        handleValidationError(httpRes, queryParams, 'v1', requestId);
+        return;
+      }
+
+      logger.info('API v1 tracks request', {
+        requestId,
+        hash: params.hash,
+        index: params.index,
+      });
+
+      handleFFprobeRequest(params.hash, params.index, httpRes, 'v1');
+      return;
+    }
+
+    if (pathname === '/api/v1/tracks/auto' && req.method === 'GET') {
+      const queryParams = reqUrl.searchParams;
+      const params = parseRequestParams(queryParams);
+
+      if (!params) {
+        handleValidationError(httpRes, queryParams, 'v1', requestId);
+        return;
+      }
+
+      logger.info('API v1 tracks/auto request', {
+        requestId,
+        hash: params.hash,
+        index: params.index,
+        title: params.title || 'none',
+      });
+
+      handleFFprobeAutoRequest(params.hash, params.index, params.title, httpRes, 'v1');
       return;
     }
 
     staticServer.serveStatic(httpRes, pathname, baseDir, STATIC_CACHE_FILES);
+  }
+
+  requestHandler.cleanup = () => {
+    torrserver.destroy();
+    cache.destroy();
+    deduplicator.destroy();
+    rateLimiter.destroy();
   };
+
+  return requestHandler;
 }
 
 module.exports = {
