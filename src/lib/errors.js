@@ -146,7 +146,11 @@ function handleError(httpRes, error, logger = defaultLogger, apiVersion = null, 
       name: error.name,
       ...(requestId && { requestId }),
     });
-    appError = new AppError(ERROR_CODES.INTERNAL_ERROR, error.message, 500);
+    appError = new AppError(
+      ERROR_CODES.INTERNAL_ERROR,
+      ERROR_MESSAGES[ERROR_CODES.INTERNAL_ERROR],
+      500,
+    );
   } else {
     logger.error('Unknown error type', {
       error,
