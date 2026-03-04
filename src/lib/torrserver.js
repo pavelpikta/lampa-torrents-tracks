@@ -1,10 +1,13 @@
 const http = require('http');
 const https = require('https');
+const { defaultLogger } = require('./logger');
+const { AppError, ERROR_CODES, createErrorFromStatus } = require('./errors');
+const { withRetry } = require('./retry');
 
 /**
  * Creates a TorrServer API client with the given options.
  * @param {Object} options - { url, username, password, requestTimeoutMs, responseMaxBytes, metadataMaxAttempts, metadataAttemptDelay }
- * @returns {Object} - { makeTorrServerRequest, checkTorrentExists, addTorrent, callFfpApi, hasFileStats, waitForMetadataThenFfp }
+ * @returns {Object} - { makeTorrServerRequest, checkTorrentExists, addTorrent, callFfpApi, hasFileStats, waitForMetadataThenFfp, ping, destroy }
  */
 function createTorrServerClient(options) {
   const {
@@ -17,10 +20,12 @@ function createTorrServerClient(options) {
     metadataAttemptDelay: TORRSERVER_METADATA_ATTEMPT_DELAY,
   } = options;
 
-  function makeTorrServerRequest(method, path, body, callback, silent = false) {
+  const logger = defaultLogger;
+
+  function makeTorrServerRequest(method, path, body, callback, silent = false, timeoutMs = null) {
     const url = `${TORRSERVER_URL}${path}`;
     if (!silent) {
-      console.log(`  [${method}] ${path}`);
+      logger.debug('TorrServer request', { method, path });
     }
 
     const client = url.startsWith('https') ? https : http;
@@ -53,11 +58,15 @@ function createTorrServerClient(options) {
       let totalLength = 0;
 
       res.on('data', (chunk) => {
-        if (totalLength >= TORRSERVER_RESPONSE_MAX_BYTES) return;
         totalLength += chunk.length;
         if (totalLength > TORRSERVER_RESPONSE_MAX_BYTES) {
           res.destroy();
-          once(413, JSON.stringify({ error: 'TorrServer response too large' }));
+          const error = new AppError(
+            ERROR_CODES.TORRSERVER_RESPONSE_TOO_LARGE,
+            'TorrServer response too large',
+            413,
+          );
+          once(413, JSON.stringify(error.toJSON()));
           return;
         }
         chunks.push(chunk);
@@ -71,15 +80,34 @@ function createTorrServerClient(options) {
     });
 
     httpReq.on('error', (error) => {
-      once(500, JSON.stringify({ error: `Failed to fetch data: ${error.message}` }));
+      logger.error('TorrServer request error', {
+        method,
+        path,
+        error: error.message,
+        code: error.code,
+        stack: error.stack,
+      });
+      const appError = new AppError(
+        ERROR_CODES.TORRSERVER_CONNECTION_FAILED,
+        'Failed to fetch data from TorrServer',
+        500,
+        { originalError: { message: error.message, code: error.code } },
+      );
+      once(500, JSON.stringify(appError.toJSON()));
     });
 
+    const effectiveTimeout = timeoutMs != null ? timeoutMs : TORRSERVER_REQUEST_TIMEOUT_MS;
     timeoutId =
-      TORRSERVER_REQUEST_TIMEOUT_MS > 0
+      effectiveTimeout > 0
         ? setTimeout(() => {
             httpReq.destroy();
-            once(504, JSON.stringify({ error: 'TorrServer request timeout' }));
-          }, TORRSERVER_REQUEST_TIMEOUT_MS)
+            const error = new AppError(
+              ERROR_CODES.TORRSERVER_TIMEOUT,
+              'TorrServer request timeout',
+              504,
+            );
+            once(504, JSON.stringify(error.toJSON()));
+          }, effectiveTimeout)
         : null;
 
     if (body) {
@@ -93,17 +121,17 @@ function createTorrServerClient(options) {
     makeTorrServerRequest(
       'POST',
       '/torrents',
-      {
-        action: 'get',
-        hash: hash,
-      },
+      { action: 'get', hash },
       (statusCode, data) => {
         if (statusCode === 200) {
           try {
             const torrentData = JSON.parse(data);
             callback(true, torrentData);
           } catch (error) {
-            console.log(`  ✗ Error parsing torrent data: ${error.message}`);
+            logger.error('Error parsing torrent data', {
+              hash: hash,
+              error: error.message,
+            });
             callback(false, null);
           }
         } else {
@@ -114,8 +142,17 @@ function createTorrServerClient(options) {
     );
   }
 
-  function addTorrent(hash, title, callback) {
-    console.log(`  Adding torrent with hash: ${hash}`);
+  function addTorrent(hash, title, category, callback) {
+    const cat = category != null ? category : 'tracks';
+    if (typeof callback !== 'function') {
+      logger.warn('addTorrent called without a function callback', { hash });
+      return;
+    }
+    logger.debug('Adding torrent', {
+      hash: hash,
+      title: title || 'none',
+      category: cat,
+    });
 
     makeTorrServerRequest(
       'POST',
@@ -124,28 +161,44 @@ function createTorrServerClient(options) {
         action: 'add',
         link: hash,
         title: title || '',
+        category: cat,
         save_to_db: false,
       },
       (statusCode, data) => {
         if (statusCode === 200) {
           try {
             const result = JSON.parse(data);
-            console.log(`  ✓ Torrent added successfully`);
+            logger.info('Torrent added successfully', { hash: hash });
             callback(true, result);
           } catch (error) {
-            console.log(`  ✗ Error parsing add torrent response: ${error.message}`);
-            callback(false, null);
+            logger.error('Error parsing add torrent response', {
+              hash: hash,
+              error: error.message,
+            });
+            callback(false, null, 500);
           }
         } else {
-          console.log(`  ✗ Error adding torrent: HTTP ${statusCode}`);
-          callback(false, null);
+          logger.error('Error adding torrent', {
+            hash: hash,
+            statusCode,
+          });
+          callback(false, null, statusCode);
         }
       },
     );
   }
 
+  /**
+   * Calls the FFprobe API with automatic retry on transient 5xx errors.
+   */
   function callFfpApi(hash, index, callback) {
-    makeTorrServerRequest('GET', `/ffp/${hash}/${index}`, null, callback);
+    withRetry(
+      (cb) => makeTorrServerRequest('GET', `/ffp/${hash}/${index}`, null, cb),
+      { maxAttempts: 3, initialDelay: 500, retryableStatusCodes: [500, 502, 503, 504] },
+      logger,
+    )
+      .then(({ statusCode, data }) => callback(statusCode, data))
+      .catch(({ statusCode, data }) => callback(statusCode, data));
   }
 
   function hasFileStats(torrentData) {
@@ -153,7 +206,53 @@ function createTorrServerClient(options) {
     return Array.isArray(stats) && stats.length > 0;
   }
 
+  /**
+   * Quick connectivity check against TorrServer's /echo endpoint.
+   * Uses a short 3-second timeout regardless of the configured request timeout.
+   * @param {Function} callback - (reachable: boolean, statusCode: number) => void
+   */
+  function ping(callback) {
+    makeTorrServerRequest(
+      'GET',
+      '/echo',
+      null,
+      (statusCode) => {
+        callback(statusCode >= 200 && statusCode < 500, statusCode);
+      },
+      true,
+      3000,
+    );
+  }
+
   const metadataWaiters = Object.create(null);
+  let cleanupInterval = null;
+
+  function cleanupMetadataWaiters() {
+    const now = Date.now();
+    const maxAge = TORRSERVER_METADATA_MAX_ATTEMPTS * TORRSERVER_METADATA_ATTEMPT_DELAY * 2;
+
+    for (const [hash, entry] of Object.entries(metadataWaiters)) {
+      if (now - entry.startTime > maxAge) {
+        logger.warn('Cleaning up stale metadata waiter', { hash: hash });
+        if (entry.timeoutId) clearTimeout(entry.timeoutId);
+        entry.callbacks.forEach(({ callback: cb }) => {
+          try {
+            const error = new AppError(
+              ERROR_CODES.METADATA_TIMEOUT,
+              'Metadata wait timeout (stale waiter)',
+              408,
+            );
+            cb(408, JSON.stringify(error.toJSON()));
+          } catch (err) {
+            logger.error('Error in stale waiter cleanup callback', { error: err.message });
+          }
+        });
+        delete metadataWaiters[hash];
+      }
+    }
+  }
+
+  cleanupInterval = setInterval(cleanupMetadataWaiters, 300000);
 
   function waitForMetadataThenFfp(
     hash,
@@ -170,19 +269,55 @@ function createTorrServerClient(options) {
     const entry = {
       callbacks: [{ index, callback }],
       attempts: 0,
-      intervalId: null,
+      timeoutId: null,
       maxAttempts,
       attemptDelay,
       startTime: Date.now(),
     };
     metadataWaiters[hash] = entry;
 
+    // Centralised finish: clears the scheduled timeout and notifies all waiters.
     function finishAll(statusCode, data) {
       const list = metadataWaiters[hash];
       if (!list) return;
+      if (list.timeoutId) clearTimeout(list.timeoutId);
       delete metadataWaiters[hash];
-      if (list.intervalId) clearInterval(list.intervalId);
-      list.callbacks.forEach(({ callback: cb }) => cb(statusCode, data));
+      list.callbacks.forEach(({ callback: cb }) => {
+        try {
+          cb(statusCode, data);
+        } catch (err) {
+          logger.error('Error in metadata waiter callback (finishAll)', {
+            hash,
+            error: err.message,
+          });
+        }
+      });
+    }
+
+    // Centralised success: immediately calls FFprobe for every waiter (no stagger).
+    function finishWithFfp() {
+      const list = metadataWaiters[hash];
+      if (!list) return;
+      if (list.timeoutId) clearTimeout(list.timeoutId);
+      delete metadataWaiters[hash];
+      list.callbacks.forEach(({ index: idx, callback: cb }) => {
+        callFfpApi(hash, idx, (statusCode, data) => {
+          try {
+            cb(statusCode, data);
+          } catch (err) {
+            logger.error('Error in metadata waiter callback (finishWithFfp)', {
+              hash,
+              index: idx,
+              error: err.message,
+            });
+          }
+        });
+      });
+    }
+
+    function scheduleNext() {
+      if (!metadataWaiters[hash]) return;
+      entry.timeoutId = setTimeout(doCheck, entry.attemptDelay);
     }
 
     function doCheck() {
@@ -191,51 +326,89 @@ function createTorrServerClient(options) {
       makeTorrServerRequest(
         'POST',
         '/torrents',
-        {
-          action: 'get',
-          hash: hash,
-        },
+        { action: 'get', hash },
         (statusCode, data) => {
           if (!metadataWaiters[hash]) return;
 
           if (statusCode === 200) {
             try {
               const torrentData = JSON.parse(data);
+
               if (hasFileStats(torrentData)) {
                 const elapsed = Math.round((Date.now() - entry.startTime) / 1000);
                 const count = (torrentData.file_stats || torrentData.FileStats).length;
-                console.log(
-                  `  ✓ Torrent metadata loaded (${elapsed}s), ${count} files. Calling /ffp for ${entry.callbacks.length} request(s)`,
-                );
-                entry.callbacks.forEach(({ index: idx, callback: cb }) => {
-                  setTimeout(() => callFfpApi(hash, idx, cb), 500);
+                logger.info('Torrent metadata loaded', {
+                  hash: hash,
+                  elapsedSeconds: elapsed,
+                  fileCount: count,
+                  callbackCount: entry.callbacks.length,
                 });
-                delete metadataWaiters[hash];
-                if (entry.intervalId) clearInterval(entry.intervalId);
+                finishWithFfp();
                 return;
               }
 
               if (entry.attempts >= maxAttempts) {
-                console.log(
-                  `  ✗ Timeout: Torrent metadata not loaded after ${Math.round((Date.now() - entry.startTime) / 1000)}s`,
+                const elapsed = Math.round((Date.now() - entry.startTime) / 1000);
+                logger.warn('Metadata wait timeout', {
+                  hash: hash,
+                  elapsedSeconds: elapsed,
+                  attempts: entry.attempts,
+                });
+                const error = new AppError(
+                  ERROR_CODES.METADATA_TIMEOUT,
+                  'Timeout waiting for torrent metadata',
+                  408,
+                  { elapsedSeconds: elapsed, attempts: entry.attempts },
                 );
-                finishAll(408, JSON.stringify({ error: 'Timeout waiting for torrent metadata' }));
+                finishAll(408, JSON.stringify(error.toJSON()));
                 return;
               }
+
+              scheduleNext();
             } catch (error) {
-              console.log(`  ✗ Error parsing torrent data: ${error.message}`);
-              finishAll(500, JSON.stringify({ error: `Error checking torrent: ${error.message}` }));
+              logger.error('Error parsing torrent data during metadata wait', {
+                hash: hash,
+                error: error.message,
+              });
+              const appError = new AppError(
+                ERROR_CODES.JSON_PARSE_ERROR,
+                'Error checking torrent',
+                500,
+                { originalError: error.message },
+              );
+              finishAll(500, JSON.stringify(appError.toJSON()));
             }
           } else if (statusCode === 404) {
             if (entry.attempts >= maxAttempts) {
-              console.log(`  ✗ Torrent not available after timeout`);
-              finishAll(404, JSON.stringify({ error: 'Torrent not available' }));
+              logger.warn('Torrent not available after timeout', { hash: hash });
+              const error = new AppError(
+                ERROR_CODES.TORRENT_NOT_FOUND,
+                'Torrent not available',
+                404,
+              );
+              finishAll(404, JSON.stringify(error.toJSON()));
+              return;
             }
+            scheduleNext();
           } else {
             if (entry.attempts >= maxAttempts) {
-              console.log(`  ✗ Error checking torrent: HTTP ${statusCode}`);
-              finishAll(statusCode, data);
+              logger.error('Error checking torrent', {
+                hash: hash,
+                statusCode,
+                attempts: entry.attempts,
+              });
+              try {
+                JSON.parse(data);
+                finishAll(statusCode, data);
+              } catch {
+                const error = createErrorFromStatus(statusCode, data, {
+                  hash: hash,
+                });
+                finishAll(statusCode, JSON.stringify(error.toJSON()));
+              }
+              return;
             }
+            scheduleNext();
           }
         },
         true,
@@ -243,9 +416,6 @@ function createTorrServerClient(options) {
     }
 
     doCheck();
-    if (maxAttempts > 1) {
-      entry.intervalId = setInterval(doCheck, attemptDelay);
-    }
   }
 
   return {
@@ -255,6 +425,28 @@ function createTorrServerClient(options) {
     callFfpApi,
     hasFileStats,
     waitForMetadataThenFfp,
+    cleanupMetadataWaiters,
+    ping,
+    destroy: () => {
+      if (cleanupInterval) {
+        clearInterval(cleanupInterval);
+        cleanupInterval = null;
+      }
+      for (const [, entry] of Object.entries(metadataWaiters)) {
+        if (entry.timeoutId) clearTimeout(entry.timeoutId);
+        entry.callbacks.forEach(({ callback: cb }) => {
+          try {
+            const error = new AppError(ERROR_CODES.SERVICE_SHUTTING_DOWN, undefined, 503);
+            cb(503, JSON.stringify(error.toJSON()));
+          } catch {
+            // ignore errors during shutdown
+          }
+        });
+      }
+      Object.keys(metadataWaiters).forEach((key) => {
+        delete metadataWaiters[key];
+      });
+    },
   };
 }
 
