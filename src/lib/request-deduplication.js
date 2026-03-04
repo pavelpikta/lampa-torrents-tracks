@@ -48,25 +48,44 @@ class RequestDeduplicator {
     this.pendingRequests.set(key, entry);
 
     // Execute the request
-    requestFn((statusCode, data) => {
-      // Remove from pending
-      const completed = this.pendingRequests.get(key);
-      if (completed) {
-        this.pendingRequests.delete(key);
+    try {
+      requestFn((statusCode, data) => {
+        // Remove from pending
+        const completed = this.pendingRequests.get(key);
+        if (completed) {
+          this.pendingRequests.delete(key);
 
-        // Call all waiting callbacks
-        completed.callbacks.forEach((cb) => {
-          try {
-            cb(statusCode, data);
-          } catch (error) {
-            this.logger.error('Error in deduplicated callback', {
-              error: error.message,
-              hash: hash,
-            });
-          }
-        });
-      }
-    });
+          // Call all waiting callbacks
+          completed.callbacks.forEach((cb) => {
+            try {
+              cb(statusCode, data);
+            } catch (error) {
+              this.logger.error('Error in deduplicated callback', {
+                error: error.message,
+                hash: hash,
+              });
+            }
+          });
+        }
+      });
+    } catch (err) {
+      this.pendingRequests.delete(key);
+      const errorPayload = JSON.stringify({ error: 'Request failed' });
+      entry.callbacks.forEach((cb) => {
+        try {
+          cb(500, errorPayload);
+        } catch (callbackErr) {
+          this.logger.error('Error in deduplicated callback', {
+            error: callbackErr.message,
+            hash: hash,
+          });
+        }
+      });
+      this.logger.error('Synchronous exception in requestFn', {
+        error: err.message,
+        hash: hash,
+      });
+    }
   }
 
   /**
