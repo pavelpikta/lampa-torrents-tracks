@@ -77,7 +77,10 @@ function createRequestHandler(config) {
     if (!xff || typeof xff !== 'string') {
       return remote || 'unknown';
     }
-    const parts = xff.split(',').map((s) => normalizeIp(s)).filter(Boolean);
+    const parts = xff
+      .split(',')
+      .map((s) => normalizeIp(s))
+      .filter(Boolean);
     for (const ip of parts) {
       if (trustedProxySet.has(ip)) continue;
       if (isPrivateOrLocal(ip)) continue;
@@ -164,11 +167,7 @@ function createRequestHandler(config) {
     }
     handleError(
       httpRes,
-      new AppError(
-        ERROR_CODES.INVALID_INDEX,
-        'Invalid index: must be a non-negative integer',
-        400,
-      ),
+      new AppError(ERROR_CODES.INVALID_INDEX, 'Invalid index: must be a non-negative integer', 400),
       logger,
       apiVersion,
       requestId,

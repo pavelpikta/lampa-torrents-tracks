@@ -277,7 +277,9 @@ function createTorrServerClient(options) {
       if (!list) return;
       if (list.timeoutId) clearTimeout(list.timeoutId);
       delete metadataWaiters[hash];
-      list.callbacks.forEach(({ callback: cb }) => { cb(statusCode, data); });
+      list.callbacks.forEach(({ callback: cb }) => {
+        cb(statusCode, data);
+      });
     }
 
     // Centralised success: immediately calls FFprobe for every waiter (no stagger).
@@ -286,7 +288,9 @@ function createTorrServerClient(options) {
       if (!list) return;
       if (list.timeoutId) clearTimeout(list.timeoutId);
       delete metadataWaiters[hash];
-      list.callbacks.forEach(({ index: idx, callback: cb }) => { callFfpApi(hash, idx, cb); });
+      list.callbacks.forEach(({ index: idx, callback: cb }) => {
+        callFfpApi(hash, idx, cb);
+      });
     }
 
     function scheduleNext() {
@@ -417,7 +421,9 @@ function createTorrServerClient(options) {
           }
         });
       }
-      Object.keys(metadataWaiters).forEach((key) => { delete metadataWaiters[key]; });
+      Object.keys(metadataWaiters).forEach((key) => {
+        delete metadataWaiters[key];
+      });
     },
   };
 }

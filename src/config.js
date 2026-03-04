@@ -6,7 +6,9 @@ function parseEnvInt(name, defaultValue) {
 function parseEnvPositiveInt(name, defaultValue) {
   const v = parseEnvInt(name, defaultValue);
   if (v <= 0 || !Number.isInteger(v)) {
-    console.warn(`[config] ${name} must be a positive integer; got ${v}. Using default: ${defaultValue}`);
+    console.warn(
+      `[config] ${name} must be a positive integer; got ${v}. Using default: ${defaultValue}`,
+    );
     return defaultValue;
   }
   return v;

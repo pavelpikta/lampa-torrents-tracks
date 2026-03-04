@@ -13,7 +13,7 @@ const { inspect } = require('util');
 function safeStringify(value) {
   try {
     return JSON.stringify(value);
-  } catch (e) {
+  } catch {
     return inspect(value, { depth: 4 });
   }
 }
