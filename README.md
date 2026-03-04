@@ -11,6 +11,10 @@ HTTP API и веб-интерфейс для получения метаданн
 
 ---
 
+## AI Документация
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pavelpikta/lampa-torrents-tracks)
+
 ## Структура проекта
 
 ```bash
