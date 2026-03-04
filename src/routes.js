@@ -78,9 +78,10 @@ function createRequestHandler(config) {
    * Sends a cached JSON response with appropriate headers.
    */
   function sendCachedResponse(httpRes, cached, apiVersion) {
+    const maxAgeSec = Math.floor(CACHE_TTL_MS / 1000);
     const headers = {
       'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': `public, max-age=${maxAgeSec}`,
       'X-Cache': 'HIT',
       'Content-Length': Buffer.byteLength(cached),
     };
