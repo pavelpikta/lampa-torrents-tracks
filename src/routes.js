@@ -252,16 +252,21 @@ function createRequestHandler(config) {
             return;
           }
 
-          torrserver.addTorrent(hash, title, (success, result) => {
+          torrserver.addTorrent(hash, title, undefined, (success, result, upstreamStatus) => {
             if (!success) {
-              logger.error('Failed to add torrent', { hash: hash });
+              const status = upstreamStatus >= 400 && upstreamStatus < 500 ? upstreamStatus : 502;
+              logger.error('Failed to add torrent', {
+                hash: hash,
+                upstreamStatus,
+                result,
+              });
               const error = new AppError(
                 ERROR_CODES.TORRENT_ADD_FAILED,
                 'Failed to add torrent to TorrServer',
-                400,
+                status,
                 { hint: 'Check if hash is valid and TorrServer is accessible' },
               );
-              callback(400, JSON.stringify(error.toJSON()));
+              callback(status, JSON.stringify(error.toJSON()));
               return;
             }
 

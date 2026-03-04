@@ -249,10 +249,7 @@ async function analyzeMedia() {
 
   torrentHash = extractHashFromMagnetOrHash(torrentHash);
 
-  if (
-    !torrentHash ||
-    (!/^[a-f0-9]{40}$/i.test(torrentHash) && !/^[A-Za-z2-7]{32}$/.test(torrentHash))
-  ) {
+  if (!torrentHash) {
     showError('Invalid hash or magnet link. Please check your input.');
     return;
   }
@@ -325,12 +322,20 @@ async function analyzeMedia() {
     hideLoading();
   } catch (error) {
     console.error('Error:', error);
-    // Handle network errors and other exceptions
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      showError('Network error: Failed to connect to the server. Please check your connection.');
+    let message;
+    if (navigator.onLine === false) {
+      message = 'You appear to be offline. Please check your connection and try again.';
+    } else if (
+      error.name === 'FetchError' ||
+      error.name === 'TypeError' ||
+      error instanceof DOMException ||
+      /failed to fetch|network error|connection refused|network/i.test(error.message || '')
+    ) {
+      message = 'Network error: Failed to connect to the server. Please check your connection.';
     } else {
-      showError(`Failed to analyze media: ${error.message}`);
+      message = `Failed to analyze media: ${error.message}`;
     }
+    showError(message);
     hideLoading();
   }
 }

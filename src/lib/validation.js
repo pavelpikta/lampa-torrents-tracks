@@ -49,9 +49,13 @@ function extractHashFromMagnet(input) {
     return ''; // Invalid magnet link format
   }
 
-  // Handle direct hash (must be exactly 40 hex characters)
+  // Handle direct hash: 40 hex or 32-char base32
   if (/^[a-fA-F0-9]{40}$/i.test(trimmed)) {
     return trimmed.toLowerCase();
+  }
+  if (/^[A-Za-z2-7]{32}$/.test(trimmed)) {
+    const hex = base32ToHex(trimmed);
+    return hex != null ? hex : '';
   }
 
   return ''; // Invalid format
@@ -82,4 +86,5 @@ function validateIndex(input) {
 module.exports = {
   extractHashFromMagnet,
   validateIndex,
+  base32ToHex,
 };

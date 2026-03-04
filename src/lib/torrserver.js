@@ -142,11 +142,16 @@ function createTorrServerClient(options) {
     );
   }
 
-  function addTorrent(hash, title, callback, category) {
+  function addTorrent(hash, title, category, callback) {
+    const cat = category != null ? category : 'tracks';
+    if (typeof callback !== 'function') {
+      logger.warn('addTorrent called without a function callback', { hash });
+      return;
+    }
     logger.debug('Adding torrent', {
       hash: hash,
       title: title || 'none',
-      category: category || 'tracks',
+      category: cat,
     });
 
     makeTorrServerRequest(
@@ -156,7 +161,7 @@ function createTorrServerClient(options) {
         action: 'add',
         link: hash,
         title: title || '',
-        category: category || 'tracks',
+        category: cat,
         save_to_db: false,
       },
       (statusCode, data) => {
@@ -170,14 +175,14 @@ function createTorrServerClient(options) {
               hash: hash,
               error: error.message,
             });
-            callback(false, null);
+            callback(false, null, 500);
           }
         } else {
           logger.error('Error adding torrent', {
             hash: hash,
             statusCode,
           });
-          callback(false, null);
+          callback(false, null, statusCode);
         }
       },
     );
@@ -367,7 +372,7 @@ function createTorrServerClient(options) {
               });
               const appError = new AppError(
                 ERROR_CODES.JSON_PARSE_ERROR,
-                `Error checking torrent: ${error.message}`,
+                'Error checking torrent',
                 500,
                 { originalError: error.message },
               );
