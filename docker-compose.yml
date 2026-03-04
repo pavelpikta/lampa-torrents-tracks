@@ -23,6 +23,7 @@ services:
       - CACHE_CLEANUP_INTERVAL_MS=600000
       - RATE_LIMIT_MAX_REQUESTS=120
       - RATE_LIMIT_WINDOW_MS=60000
+      # TRUSTED_PROXY_IPS=  # optional: comma-separated proxy IPs when behind reverse proxy (client IP for rate limit)
       - LOG_LEVEL=INFO
     restart: unless-stopped
     networks:

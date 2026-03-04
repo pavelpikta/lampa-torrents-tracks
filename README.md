@@ -128,9 +128,11 @@ docker run -d --name lampa-torrents-tracks -p 3000:3000 \
 | `CACHE_CLEANUP_INTERVAL_MS`         | `600000`                | Интервал очистки кэша, мс (10 минут)                  |
 | `RATE_LIMIT_MAX_REQUESTS`           | `120`                   | Макс. запросов с одного IP за окно                    |
 | `RATE_LIMIT_WINDOW_MS`              | `60000`                 | Размер окна rate limit, мс (1 минута)                 |
+| `TRUSTED_PROXY_IPS`                 | —                       | Список IP доверенных прокси через запятую; при задании клиентский IP берётся из `X-Forwarded-For` (первый публичный IP не из списка), иначе — `socket.remoteAddress` (защита от подделки заголовка) |
 | `LOG_LEVEL`                         | `INFO`                  | Уровень логирования: `ERROR`, `WARN`, `INFO`, `DEBUG` |
 
 > **Логирование:** `ERROR` и `WARN` пишутся в `stderr`, `INFO` и `DEBUG` — в `stdout`. Удобно для Docker log drivers и систем агрегации логов (Loki, CloudWatch и др.).
+> **Rate limit за прокси:** если сервер стоит за обратным прокси (nginx, cloudflared и т.д.), задайте `TRUSTED_PROXY_IPS` (IP прокси), чтобы лимит считался по реальному IP клиента из `X-Forwarded-For`, а не по IP прокси.
 
 Все переменные можно задать в `.env` (локально) или в секции `environment` файла `docker-compose.yml`.
 
@@ -173,7 +175,7 @@ FFprobe по уже добавленному в TorrServer торренту.
 
 | Параметр | Обязательный | Описание                                |
 | -------- | ------------ | --------------------------------------- |
-| `hash`   | да           | Хеш торрента (40 hex) или magnet-ссылка |
+| `hash`   | да           | Хеш торрента (40 hex), 32 base32 или magnet-ссылка (поддерживаются 40 hex и 32 base32 BTIH) |
 | `index`  | нет          | Номер файла в раздаче, по умолчанию `1` |
 
 **Пример:**
@@ -182,7 +184,7 @@ FFprobe по уже добавленному в TorrServer торренту.
 curl "http://localhost:3000/api/v1/tracks?hash=YOUR_40CHAR_HASH&index=1"
 ```
 
-**Ответ:** JSON с полем `streams` (массив потоков: video, audio, subtitle). Заголовки ответа включают `X-API-Version: v1` и `Content-Length`. При кэшированном результате добавляются `X-Cache: HIT` и `Cache-Control: public, max-age=3600`.
+**Ответ:** JSON с полем `streams` (массив потоков: video, audio, subtitle). Заголовки ответа включают `X-API-Version: v1` и `Content-Length`. При кэшированном результате добавляются `X-Cache: HIT` и `Cache-Control: public, max-age=<секунды>` (значение `max-age` вычисляется из `CACHE_TTL_MS`).
 
 ---
 
@@ -194,7 +196,7 @@ curl "http://localhost:3000/api/v1/tracks?hash=YOUR_40CHAR_HASH&index=1"
 
 | Параметр | Обязательный | Описание                         |
 | -------- | ------------ | -------------------------------- |
-| `hash`   | да           | Хеш (40 hex) или magnet          |
+| `hash`   | да           | Хеш (40 hex), 32 base32 или magnet (40 hex / 32 base32 BTIH) |
 | `index`  | нет          | Номер файла, по умолчанию `1`    |
 | `title`  | нет          | Название при добавлении торрента |
 
