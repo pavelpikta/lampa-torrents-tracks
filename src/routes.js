@@ -92,9 +92,13 @@ function createRequestHandler(config) {
 
   /**
    * Handles validation errors for request parameters.
+   * Validates hash (presence and format) first; only reports INVALID_INDEX when index is actually invalid.
    */
   function handleValidationError(httpRes, queryParams, apiVersion, requestId) {
-    if (!queryParams.get('hash')) {
+    const hashRaw = queryParams.get('hash') || '';
+    const hash = validation.extractHashFromMagnet(hashRaw);
+    const hashValid = hash && /^[a-f0-9]{40}$/i.test(hash);
+    if (!hashValid) {
       handleError(
         httpRes,
         new AppError(ERROR_CODES.INVALID_HASH, 'Hash is required or invalid magnet link', 400),
@@ -102,19 +106,19 @@ function createRequestHandler(config) {
         apiVersion,
         requestId,
       );
-    } else {
-      handleError(
-        httpRes,
-        new AppError(
-          ERROR_CODES.INVALID_INDEX,
-          'Invalid index: must be a non-negative integer',
-          400,
-        ),
-        logger,
-        apiVersion,
-        requestId,
-      );
+      return;
     }
+    handleError(
+      httpRes,
+      new AppError(
+        ERROR_CODES.INVALID_INDEX,
+        'Invalid index: must be a non-negative integer',
+        400,
+      ),
+      logger,
+      apiVersion,
+      requestId,
+    );
   }
 
   /**
