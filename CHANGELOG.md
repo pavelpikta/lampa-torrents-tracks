@@ -1,5 +1,47 @@
 # Changelog
 
+## [2.0.0](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v1.0.2...v2.0.0) (2026-03-04)
+
+### ⚠ BREAKING CHANGES
+
+* enhance caching and rate limiting features (#14)
+* enhance caching and rate limiting features
+
+### Bug Fixes
+
+* correct rate limiting logic to return false when request limit is reached ([6001cee](https://github.com/pavelpikta/lampa-torrents-tracks/commit/6001cee8dd3715c748e1b48a694ce3bcdc09e1e7))
+* enhance error handling by including additional context in error creation ([e6d5180](https://github.com/pavelpikta/lampa-torrents-tracks/commit/e6d5180bf87ab5102f5935e1da76dbc84698674b))
+* enhance error handling in media analysis and torrent addition processes ([c304a64](https://github.com/pavelpikta/lampa-torrents-tracks/commit/c304a64e5862bb18c193ce1a52a85ea1aa9bec83))
+* improve error handling in request deduplication ([27518b9](https://github.com/pavelpikta/lampa-torrents-tracks/commit/27518b92918082987a2a53cdb41f251093cfc722))
+* improve error message display in the UI ([5d2410b](https://github.com/pavelpikta/lampa-torrents-tracks/commit/5d2410b947e23d099cca965e592739d7197398f4))
+* improve validation error handling for hash and index parameters ([800cc78](https://github.com/pavelpikta/lampa-torrents-tracks/commit/800cc786f64da3c1b497deed4b151f6cd14239ca))
+* modify health check to use environment variable for HTTP port ([c8b3d5d](https://github.com/pavelpikta/lampa-torrents-tracks/commit/c8b3d5d38a79109541fa72810b444a138a32594e))
+* update Cache-Control header to use dynamic max-age based on CACHE_TTL_MS ([0b2c305](https://github.com/pavelpikta/lampa-torrents-tracks/commit/0b2c3057da06ebc35382073da89963cb2cdbbebc))
+* update error handling to use predefined error messages for consistency ([3126cb2](https://github.com/pavelpikta/lampa-torrents-tracks/commit/3126cb2054eb1df1a73e7314bbe71a7ac2862cb4))
+* update health check to use dynamic HTTP port ([1ae0ad8](https://github.com/pavelpikta/lampa-torrents-tracks/commit/1ae0ad834e9f72db04ff80126d366fd773f24930))
+
+### Docs
+
+* add AI documentation section ([52262ce](https://github.com/pavelpikta/lampa-torrents-tracks/commit/52262ce68e76cf43f0e87bcc40ae0239b0ed1e16))
+* update README to include TRUSTED_PROXY_IPS variable and clarify hash parameter formats in API documentation ([fbfe8f0](https://github.com/pavelpikta/lampa-torrents-tracks/commit/fbfe8f076daec588732993332bc807624d13caef))
+
+### Features
+
+* add `SERVICE_SHUTTING_DOWN` error code ([b604415](https://github.com/pavelpikta/lampa-torrents-tracks/commit/b604415f90ffdb481ffcb7e69fa64a47f01a255b))
+* add parseEnvPositiveInt function for positive integer validation ([66304b3](https://github.com/pavelpikta/lampa-torrents-tracks/commit/66304b3e70cf0ab032d857e6fe723c3102309bf5))
+* add safeStringify function for improved logging context serialization ([ce3c916](https://github.com/pavelpikta/lampa-torrents-tracks/commit/ce3c916bed03acdc211e17990c6fac495d993d86))
+* add support for trusted proxy IPs and improve client IP derivation logic ([df63cd3](https://github.com/pavelpikta/lampa-torrents-tracks/commit/df63cd32abaf83beb157f6db1c32af549d0dcef5))
+* enhance hash extraction logic to support base32 format and improve error handling ([d7b516d](https://github.com/pavelpikta/lampa-torrents-tracks/commit/d7b516d2be76e75558d9dacb31d1796f6bf0bcf8))
+* implement base32 to hex conversion for torrent hash extraction ([2ee5ce1](https://github.com/pavelpikta/lampa-torrents-tracks/commit/2ee5ce1a7a8bdc81221dda2e112dcb55c3e890c9))
+* implement graceful shutdown logic with timeout handling for HTTP server ([a63016e](https://github.com/pavelpikta/lampa-torrents-tracks/commit/a63016e555b187be1e296d4d7684d45339053b13))
+* enhance caching and rate limiting features ([2b3c925](https://github.com/pavelpikta/lampa-torrents-tracks/commit/2b3c925c9ff4f2c1be2a22b71592f80a5defd351))
+* enhance caching and rate limiting features ([#14](https://github.com/pavelpikta/lampa-torrents-tracks/issues/14)) ([cf9a819](https://github.com/pavelpikta/lampa-torrents-tracks/commit/cf9a81910a56a1185f9ba3a33f1ce0c501154848))
+
+### Refactor
+
+* formatting and restructuring callback invocations ([e1ff381](https://github.com/pavelpikta/lampa-torrents-tracks/commit/e1ff381071f260b07cd0d8d1263abf7fbcbfd90f))
+* simplify callback invocation syntax in createTorrServerClient function ([0caf419](https://github.com/pavelpikta/lampa-torrents-tracks/commit/0caf41902ba1761654d5839a26342b08440edb90))
+
 ## [1.0.2](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v1.0.1...v1.0.2) (2026-03-04)
 
 ### CI/CD
