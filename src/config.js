@@ -33,6 +33,12 @@ const RATE_LIMIT_WINDOW_MS = parseEnvPositiveInt('RATE_LIMIT_WINDOW_MS', 60000);
 
 const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
 
+/** Comma-separated list of trusted proxy IPs; when set, X-Forwarded-For is used to derive client IP */
+const TRUSTED_PROXY_IPS = (process.env.TRUSTED_PROXY_IPS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 function printBanner() {
   console.log('Lampa Tracks FFprobe API Server');
   console.log('================================');
@@ -60,5 +66,6 @@ module.exports = {
   RATE_LIMIT_MAX_REQUESTS,
   RATE_LIMIT_WINDOW_MS,
   LOG_LEVEL,
+  TRUSTED_PROXY_IPS,
   printBanner,
 };

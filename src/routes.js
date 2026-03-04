@@ -30,7 +30,61 @@ function createRequestHandler(config) {
     CACHE_CLEANUP_INTERVAL_MS,
     RATE_LIMIT_MAX_REQUESTS,
     RATE_LIMIT_WINDOW_MS,
+    TRUSTED_PROXY_IPS = [],
   } = config;
+
+  const trustedProxySet = new Set(
+    (TRUSTED_PROXY_IPS || []).map((s) => (s.startsWith('::ffff:') ? s.slice(7) : s)),
+  );
+
+  /**
+   * Normalize IP for comparison (strip IPv6-mapped prefix).
+   */
+  function normalizeIp(ip) {
+    if (!ip || typeof ip !== 'string') return '';
+    const trimmed = ip.trim();
+    return trimmed.startsWith('::ffff:') ? trimmed.slice(7) : trimmed;
+  }
+
+  /**
+   * True if the IP is private/link-local/loopback (not a public client).
+   */
+  function isPrivateOrLocal(ip) {
+    const n = normalizeIp(ip);
+    if (!n) return true;
+    if (n === '::1' || n === '127.0.0.1') return true;
+    if (n.startsWith('127.')) return true;
+    if (n.startsWith('10.')) return true;
+    if (n.startsWith('192.168.')) return true;
+    if (n.startsWith('172.')) {
+      const second = parseInt(n.split('.')[1], 10);
+      if (second >= 16 && second <= 31) return true;
+    }
+    if (n.startsWith('fe80:') || n.startsWith('fc') || n.startsWith('fd')) return true;
+    return false;
+  }
+
+  /**
+   * Derive trusted client IP: when behind trusted proxies use X-Forwarded-For
+   * (first public/non-private IP not in trusted list), otherwise socket.remoteAddress.
+   */
+  function getClientIp(req) {
+    const remote = normalizeIp(req.socket?.remoteAddress || '');
+    if (trustedProxySet.size === 0) {
+      return remote || 'unknown';
+    }
+    const xff = req.headers['x-forwarded-for'];
+    if (!xff || typeof xff !== 'string') {
+      return remote || 'unknown';
+    }
+    const parts = xff.split(',').map((s) => normalizeIp(s)).filter(Boolean);
+    for (const ip of parts) {
+      if (trustedProxySet.has(ip)) continue;
+      if (isPrivateOrLocal(ip)) continue;
+      return ip;
+    }
+    return remote || 'unknown';
+  }
 
   const torrserver = createTorrServerClient({
     url: TORRSERVER_URL,
@@ -267,12 +321,9 @@ function createRequestHandler(config) {
     }
     const pathname = reqUrl.pathname;
 
-    // Rate limiting applies to API endpoints only
+    // Rate limiting applies to API endpoints only (trusted client IP to avoid spoofing)
     if (pathname.startsWith('/api/')) {
-      const ip =
-        req.headers['x-forwarded-for']?.split(',')[0].trim() ||
-        req.socket?.remoteAddress ||
-        'unknown';
+      const ip = getClientIp(req);
       if (!rateLimiter.isAllowed(ip)) {
         logger.warn('Rate limit exceeded', { requestId, ip });
         const body = JSON.stringify({
