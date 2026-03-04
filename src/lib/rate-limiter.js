@@ -22,10 +22,13 @@ class RateLimiter {
 
     const existing = this.requests.get(ip);
     const timestamps = existing ? existing.filter((t) => t > windowStart) : [];
+    if (timestamps.length >= this.maxRequests) {
+      this.requests.set(ip, timestamps);
+      return false;
+    }
     timestamps.push(now);
     this.requests.set(ip, timestamps);
-
-    return timestamps.length <= this.maxRequests;
+    return true;
   }
 
   /**
