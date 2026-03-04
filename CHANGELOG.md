@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v1.0.1...v1.0.2) (2026-03-04)
+
+### CI/CD
+
+* **deps:** bump actions/attest-build-provenance from 3.2.0 to 4.1.0 ([#9](https://github.com/pavelpikta/lampa-torrents-tracks/issues/9)) ([b7f2a69](https://github.com/pavelpikta/lampa-torrents-tracks/commit/b7f2a69ac7ffa04851604d7abc90739f6d231db1))
+* **deps:** bump actions/setup-node from 6.2.0 to 6.3.0 ([#12](https://github.com/pavelpikta/lampa-torrents-tracks/issues/12)) ([6e52662](https://github.com/pavelpikta/lampa-torrents-tracks/commit/6e526624abddfc967d555ebb64023a1111dc4a87))
+* **deps:** bump actions/upload-artifact from 6.0.0 to 7.0.0 ([#10](https://github.com/pavelpikta/lampa-torrents-tracks/issues/10)) ([ae4f590](https://github.com/pavelpikta/lampa-torrents-tracks/commit/ae4f590de751b1be46d666baa2237a03467d0b24))
+* **deps:** bump anchore/sbom-action from 0.22.2 to 0.23.0 ([#11](https://github.com/pavelpikta/lampa-torrents-tracks/issues/11)) ([68ee49a](https://github.com/pavelpikta/lampa-torrents-tracks/commit/68ee49a1e1e294705586de44199e38183e728f27))
+
 ## [1.0.1](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v1.0.0...v1.0.1) (2026-02-13)
 
 ### CI/CD
