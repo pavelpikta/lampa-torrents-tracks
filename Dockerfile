@@ -39,7 +39,7 @@ ENV LOG_LEVEL=INFO
 # Health check: accept 200 (ok) and 503 (degraded — TorrServer unreachable but our server is alive).
 # This prevents restart loops when TorrServer is temporarily unavailable.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 || r.statusCode === 503 ? 0 : 1)})" || exit 1
+    CMD node -e "require('http').get('http://localhost:' + (process.env.HTTP_PORT || 3000) + '/health', (r) => {process.exit(r.statusCode === 200 || r.statusCode === 503 ? 0 : 1)})" || exit 1
 
 # Switch to non-root user
 USER nodejs
