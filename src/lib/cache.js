@@ -7,9 +7,9 @@ const { defaultLogger } = require('./logger');
 
 class Cache {
   constructor(options = {}) {
-    this.maxSize = options.maxSize || 1000;
-    this.defaultTTL = options.defaultTTL || 3600000; // 1 hour default
-    this.cleanupInterval = options.cleanupInterval || 600000; // 10 minutes
+    this.maxSize = options.maxSize ?? 1000;
+    this.defaultTTL = options.defaultTTL ?? 3600000; // 1 hour default
+    this.cleanupInterval = options.cleanupInterval ?? 600000; // 10 minutes
     this.store = new Map();
     this.accessOrder = new Map(); // Track access order for LRU-like behavior
     this.logger = options.logger || defaultLogger;
@@ -43,8 +43,9 @@ class Cache {
       return null;
     }
 
-    // Update access order
-    this.accessOrder.set(key, Date.now());
+    // Move to end to mark as most recently used
+    this.accessOrder.delete(key);
+    this.accessOrder.set(key, 1);
     return entry.value;
   }
 
@@ -61,7 +62,9 @@ class Cache {
     }
 
     this.store.set(key, { value, expiresAt });
-    this.accessOrder.set(key, Date.now());
+    // Delete then re-insert to move to end (most recently used)
+    this.accessOrder.delete(key);
+    this.accessOrder.set(key, 1);
   }
 
   /**
@@ -106,25 +109,15 @@ class Cache {
   }
 
   /**
-   * Evict oldest entry based on access order
+   * Evict least recently used entry.
+   * Map preserves insertion order, so the first key is always the LRU entry.
    * @private
    */
   _evictOldest() {
-    if (this.accessOrder.size === 0) return;
-
-    let oldestKey = null;
-    let oldestTime = Infinity;
-
-    for (const [key, time] of this.accessOrder.entries()) {
-      if (time < oldestTime) {
-        oldestTime = time;
-        oldestKey = key;
-      }
-    }
-
-    if (oldestKey) {
-      this.store.delete(oldestKey);
-      this.accessOrder.delete(oldestKey);
+    const firstKey = this.accessOrder.keys().next().value;
+    if (firstKey !== undefined) {
+      this.store.delete(firstKey);
+      this.accessOrder.delete(firstKey);
     }
   }
 
@@ -166,9 +159,9 @@ class Cache {
  */
 function createCache(config = {}) {
   return new Cache({
-    maxSize: config.CACHE_MAX_SIZE || 1000,
-    defaultTTL: config.CACHE_TTL_MS || 3600000,
-    cleanupInterval: config.CACHE_CLEANUP_INTERVAL_MS || 600000,
+    maxSize: config.CACHE_MAX_SIZE ?? 1000,
+    defaultTTL: config.CACHE_TTL_MS ?? 3600000,
+    cleanupInterval: config.CACHE_CLEANUP_INTERVAL_MS ?? 600000,
   });
 }
 
