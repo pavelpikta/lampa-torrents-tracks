@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.3](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.0.2...v2.0.3) (2026-03-16)
+
+### Bug Fixes
+
+* cache LRU eviction and use nullish coalescing operator ([#22](https://github.com/pavelpikta/lampa-torrents-tracks/issues/22)) ([973e4b8](https://github.com/pavelpikta/lampa-torrents-tracks/commit/973e4b80786a209b50924980c14b8171f8491722))
+
 ## [2.0.2](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.0.1...v2.0.2) (2026-03-11)
 
 ### CI/CD
