@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.5](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.0.4...v2.0.5) (2026-04-03)
+
+### CI/CD
+
+* **deps:** bump docker/login-action from 4.0.0 to 4.1.0 ([#26](https://github.com/pavelpikta/lampa-torrents-tracks/issues/26)) ([598a181](https://github.com/pavelpikta/lampa-torrents-tracks/commit/598a181c86c2e9baf051e01fe5ace343c9c8b770))
+
 ## [2.0.4](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.0.3...v2.0.4) (2026-03-22)
 
 ### CI/CD
