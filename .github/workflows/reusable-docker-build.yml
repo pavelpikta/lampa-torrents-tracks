@@ -111,7 +111,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: ${{ inputs.push }}
-        uses: docker/login-action@v4.0.0
+        uses: docker/login-action@v4.1.0
         with:
           registry: ${{ vars.GHCR_REGISTRY }}
           username: ${{ github.actor }}
