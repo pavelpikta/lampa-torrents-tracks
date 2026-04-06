@@ -30,7 +30,7 @@ jobs:
           GH_BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
           GH_HEAD_REF: ${{ github.head_ref }}
         run: |
-          gh extension install actions/gh-action-cache
+          gh extension install actions/gh-actions-cache
 
           echo "Fetching cache list..."
           cacheKeysForPR=$(gh action-cache list -R $GH_REPOSITORY -B $GH_BRANCH -L 100 | cut -f 1)
