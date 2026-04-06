@@ -29,7 +29,7 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
-    "dotenv": "^17.4.0"
+    "dotenv": "^17.4.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
