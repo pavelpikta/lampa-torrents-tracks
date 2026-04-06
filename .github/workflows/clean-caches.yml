@@ -1,0 +1,51 @@
+---
+name: Clean Caches
+
+on:
+  workflow_call:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  clean-caches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install GitHub CLI
+        shell: bash
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh
+          gh --version
+
+      - name: Clean caches
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
+          GH_BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
+          GH_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          gh extension install actions/gh-action-cache
+
+          echo "Fetching cache list..."
+          cacheKeysForPR=$(gh action-cache list -R $GH_REPOSITORY -B $GH_BRANCH -L 100 | cut -f 1)
+          cacheKeysForHeadRef=$(gh action-cache list -R $GH_REPOSITORY -B $GH_HEAD_REF -L 100 | cut -f 1)
+
+          set +e
+          echo "Cleaning cache for PR..."
+          for cacheKey in $cacheKeysForPR; do
+            gh action-cache delete -R $GH_REPOSITORY -B $GH_BRANCH -k $cacheKey --confirm
+          done
+
+          echo "Cleaning cache for head ref..."
+          for cacheKey in $cacheKeysForHeadRef; do
+            gh action-cache delete -R $GH_REPOSITORY -B $GH_HEAD_REF -k $cacheKey --confirm
+          done
+          set -e
+
+          echo "Cache cleaned successfully"
