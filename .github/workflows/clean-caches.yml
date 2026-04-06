@@ -2,7 +2,7 @@
 name: Clean Caches
 
 on:
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   actions: write
@@ -28,12 +28,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPOSITORY: ${{ github.repository }}
           GH_BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
+          GH_HEAD_REF: ${{ github.head_ref }}
         run: |
           gh extension install actions/gh-action-cache
 
           echo "Fetching cache list..."
           cacheKeysForPR=$(gh action-cache list -R $GH_REPOSITORY -B $GH_BRANCH -L 100 | cut -f 1)
-          cacheKeysForHeadRef=$(gh action-cache list -R $GH_REPOSITORY -B ${{ github.head_ref }} -L 100 | cut -f 1)
+          cacheKeysForHeadRef=$(gh action-cache list -R $GH_REPOSITORY -B $GH_HEAD_REF -L 100 | cut -f 1)
 
           set +e
           echo "Cleaning cache for PR..."
@@ -43,7 +44,7 @@ jobs:
 
           echo "Cleaning cache for head ref..."
           for cacheKey in $cacheKeysForHeadRef; do
-            gh action-cache delete -R $GH_REPOSITORY -B ${{ github.head_ref }} -k $cacheKey --confirm
+            gh action-cache delete -R $GH_REPOSITORY -B $GH_HEAD_REF -k $cacheKey --confirm
           done
           set -e
 
