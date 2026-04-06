@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.0](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.0.5...v2.1.0) (2026-04-06)
+
+### Bug Fixes
+
+* **ci:** correct extension name in clean-caches workflow ([bb7e55c](https://github.com/pavelpikta/lampa-torrents-tracks/commit/bb7e55c1855b6da05666012bef12ba6e9e9f6e58))
+
+### Features
+
+* **ci:** add workflows for cleaning and deleting caches ([#31](https://github.com/pavelpikta/lampa-torrents-tracks/issues/31)) ([dd7882d](https://github.com/pavelpikta/lampa-torrents-tracks/commit/dd7882d5bd998131a62409dcb883e956247d7237))
+
 ## [2.0.5](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.0.4...v2.0.5) (2026-04-03)
 
 ### CI/CD
