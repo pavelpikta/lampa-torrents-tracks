@@ -1,0 +1,12 @@
+---
+name: Delete Caches
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  delete-caches:
+    uses: ./.github/workflows/clean-caches.yml
+    secrets: inherit
