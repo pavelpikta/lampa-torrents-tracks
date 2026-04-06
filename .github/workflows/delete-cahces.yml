@@ -6,6 +6,10 @@ on:
     types:
       - closed
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   delete-caches:
     uses: ./.github/workflows/clean-caches.yml

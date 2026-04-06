@@ -4,6 +4,10 @@ name: Clean Caches
 on:
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   clean-caches:
     runs-on: ubuntu-latest
