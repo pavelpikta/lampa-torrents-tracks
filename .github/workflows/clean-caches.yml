@@ -33,18 +33,18 @@ jobs:
           gh extension install actions/gh-actions-cache
 
           echo "Fetching cache list..."
-          cacheKeysForPR=$(gh action-cache list -R $GH_REPOSITORY -B $GH_BRANCH -L 100 | cut -f 1)
-          cacheKeysForHeadRef=$(gh action-cache list -R $GH_REPOSITORY -B $GH_HEAD_REF -L 100 | cut -f 1)
+          cacheKeysForPR=$(gh actions-cache list -R $GH_REPOSITORY -B $GH_BRANCH -L 100 | cut -f 1)
+          cacheKeysForHeadRef=$(gh actions-cache list -R $GH_REPOSITORY -B $GH_HEAD_REF -L 100 | cut -f 1)
 
           set +e
           echo "Cleaning cache for PR..."
           for cacheKey in $cacheKeysForPR; do
-            gh action-cache delete -R $GH_REPOSITORY -B $GH_BRANCH -k $cacheKey --confirm
+            gh actions-cache delete -R $GH_REPOSITORY -B $GH_BRANCH -k $cacheKey --confirm
           done
 
           echo "Cleaning cache for head ref..."
           for cacheKey in $cacheKeysForHeadRef; do
-            gh action-cache delete -R $GH_REPOSITORY -B $GH_HEAD_REF -k $cacheKey --confirm
+            gh actions-cache delete -R $GH_REPOSITORY -B $GH_HEAD_REF -k $cacheKey --confirm
           done
           set -e
 
