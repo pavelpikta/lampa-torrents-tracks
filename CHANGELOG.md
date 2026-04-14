@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.1](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.0...v2.1.1) (2026-04-14)
+
+### Bug Fixes
+
+* **ci:** update clean-caches workflow to use correct command ([#37](https://github.com/pavelpikta/lampa-torrents-tracks/issues/37)) ([9f3ebdd](https://github.com/pavelpikta/lampa-torrents-tracks/commit/9f3ebddd7a20384a5b112e7b80f4cc7854ba84e2))
+
+### CI/CD
+
+* **deps:** bump actions/upload-artifact from 7.0.0 to 7.0.1 ([#32](https://github.com/pavelpikta/lampa-torrents-tracks/issues/32)) ([63203e1](https://github.com/pavelpikta/lampa-torrents-tracks/commit/63203e141100af7145dfb56c9b4265f331414b00))
+* **deps:** bump docker/build-push-action from 7.0.0 to 7.1.0 ([#33](https://github.com/pavelpikta/lampa-torrents-tracks/issues/33)) ([11554da](https://github.com/pavelpikta/lampa-torrents-tracks/commit/11554daa9dd3f63eb51a70c06bbfa90595ec3a22))
+
+### Refactor
+
+* **ci:** use gh cache delete directly ([#38](https://github.com/pavelpikta/lampa-torrents-tracks/issues/38)) ([4e1f74c](https://github.com/pavelpikta/lampa-torrents-tracks/commit/4e1f74cb95d4f41841e168bca3169dfca7a41d19))
+
 ## [2.1.0](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.0.5...v2.1.0) (2026-04-06)
 
 ### Bug Fixes
