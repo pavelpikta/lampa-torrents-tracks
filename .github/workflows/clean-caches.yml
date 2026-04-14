@@ -12,40 +12,26 @@ jobs:
   clean-caches:
     runs-on: ubuntu-latest
     steps:
-      - name: Install GitHub CLI
-        shell: bash
-        run: |
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh
-          gh --version
-
       - name: Clean caches
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPOSITORY: ${{ github.repository }}
-          GH_BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
-          GH_HEAD_REF: ${{ github.head_ref }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REF_NAME: ${{ github.head_ref }}
         run: |
-          gh extension install actions/gh-actions-cache
-
-          echo "Fetching cache list..."
-          cacheKeysForPR=$(gh actions-cache list -R $GH_REPOSITORY -B $GH_BRANCH -L 100 | cut -f 1)
-          cacheKeysForHeadRef=$(gh actions-cache list -R $GH_REPOSITORY -B $GH_HEAD_REF -L 100 | cut -f 1)
-
-          set +e
-          echo "Cleaning cache for PR..."
-          for cacheKey in $cacheKeysForPR; do
-            gh actions-cache delete -R $GH_REPOSITORY -B $GH_BRANCH -k $cacheKey --confirm
-          done
-
-          echo "Cleaning cache for head ref..."
-          for cacheKey in $cacheKeysForHeadRef; do
-            gh actions-cache delete -R $GH_REPOSITORY -B $GH_HEAD_REF -k $cacheKey --confirm
-          done
           set -e
+          PR_REF="refs/pull/${PR_NUMBER}/merge"
+          HEAD_REF="refs/heads/${HEAD_REF_NAME}"
 
-          echo "Cache cleaned successfully"
+          echo "Caches for PR ref ${PR_REF}:"
+          gh cache list --repo "$REPO" --ref "$PR_REF" --limit 100
+          echo "Deleting caches for PR ref..."
+          gh cache delete --all --repo "$REPO" --ref "$PR_REF" --succeed-on-no-caches
+
+          echo "Caches for head ref ${HEAD_REF}:"
+          gh cache list --repo "$REPO" --ref "$HEAD_REF" --limit 100
+          echo "Deleting caches for head ref..."
+          gh cache delete --all --repo "$REPO" --ref "$HEAD_REF" --succeed-on-no-caches
+
+          echo "Caches cleaned successfully"
