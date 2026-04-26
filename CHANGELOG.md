@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.2](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.1...v2.1.2) (2026-04-26)
+
+### CI/CD
+
+* **deps:** bump actions/setup-node from 6.3.0 to 6.4.0 ([#41](https://github.com/pavelpikta/lampa-torrents-tracks/issues/41)) ([7aba200](https://github.com/pavelpikta/lampa-torrents-tracks/commit/7aba2009cc989e01536590d172cd117fdc438cc5))
+
 ## [2.1.1](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.0...v2.1.1) (2026-04-14)
 
 ### Bug Fixes
