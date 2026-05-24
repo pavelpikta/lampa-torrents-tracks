@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.3](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.2...v2.1.3) (2026-05-24)
+
+### CI/CD
+
+* **deps:** bump docker/build-push-action from 7.1.0 to 7.2.0 ([#45](https://github.com/pavelpikta/lampa-torrents-tracks/issues/45)) ([78eaaf7](https://github.com/pavelpikta/lampa-torrents-tracks/commit/78eaaf74889e02e31e69ca2d7726908c1de150ce))
+* **deps:** bump docker/login-action from 4.1.0 to 4.2.0 ([#44](https://github.com/pavelpikta/lampa-torrents-tracks/issues/44)) ([ff77335](https://github.com/pavelpikta/lampa-torrents-tracks/commit/ff77335a860494b8b5908bad974b9ee41476367d))
+* **deps:** bump docker/metadata-action from 6.0.0 to 6.1.0 ([#47](https://github.com/pavelpikta/lampa-torrents-tracks/issues/47)) ([b0398aa](https://github.com/pavelpikta/lampa-torrents-tracks/commit/b0398aa3ab0f75dee5a3aa46a01b4de6619cb7cc))
+* **deps:** bump docker/setup-buildx-action from 4.0.0 to 4.1.0 ([#46](https://github.com/pavelpikta/lampa-torrents-tracks/issues/46)) ([0362a7e](https://github.com/pavelpikta/lampa-torrents-tracks/commit/0362a7e0ad74038700c2de794054bc5dc28c2352))
+
 ## [2.1.2](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.1...v2.1.2) (2026-04-26)
 
 ### CI/CD
