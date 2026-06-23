@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.5](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.4...v2.1.5) (2026-06-23)
+
+### CI/CD
+
+* **deps:** bump actions/checkout from 6 to 7 ([#52](https://github.com/pavelpikta/lampa-torrents-tracks/issues/52)) ([aab06bf](https://github.com/pavelpikta/lampa-torrents-tracks/commit/aab06bfa425741196817ac747fa0b703295af1d0))
+
 ## [2.1.4](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.3...v2.1.4) (2026-05-31)
 
 ### CI/CD
