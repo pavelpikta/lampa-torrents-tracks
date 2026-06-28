@@ -1,5 +1,7 @@
 # Changelog
 
+## [2.1.6](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.5...v2.1.6) (2026-06-28)
+
 ## [2.1.5](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.4...v2.1.5) (2026-06-23)
 
 ### CI/CD
