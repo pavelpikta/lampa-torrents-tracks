@@ -40,12 +40,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_PAT }}
         with:
-          semantic_version: ${{ vars.SEMANTIC_VERSION }}
+          semantic_version: 25.0.9
           dry_run: ${{ inputs.dry_run || !github.event_name == 'schedule' }}
+          # Pin all plugins. Preset must stay on v9 until release-notes-generator v15
+          # (writer@9) is stable — v10 requires conventional-changelog-writer@9+.
+          # See: https://github.com/semantic-release/release-notes-generator/issues/992
           extra_plugins: |
-            @semantic-release/commit-analyzer
-            @semantic-release/release-notes-generator
-            @semantic-release/changelog
-            @semantic-release/git
-            @semantic-release/github
-            conventional-changelog-conventionalcommits
+            @semantic-release/commit-analyzer@13.0.1
+            @semantic-release/release-notes-generator@14.1.1
+            @semantic-release/changelog@7.0.0
+            @semantic-release/git@11.0.1
+            @semantic-release/github@12.0.9
+            conventional-changelog-conventionalcommits@9.3.1
