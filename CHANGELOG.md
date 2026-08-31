@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.13](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.12...v2.1.13) (2026-08-31)
+
+### CI/CD
+
+* **deps:** bump anchore/sbom-action from 0.24.0 to 0.24.1 ([#78](https://github.com/pavelpikta/lampa-torrents-tracks/issues/78)) ([c04775c](https://github.com/pavelpikta/lampa-torrents-tracks/commit/c04775c92d125cccb3774e1276ab2ed8c3db5762))
+* **deps:** bump anchore/sbom-action from 0.24.1 to 0.24.2 ([#80](https://github.com/pavelpikta/lampa-torrents-tracks/issues/80)) ([7e2fe44](https://github.com/pavelpikta/lampa-torrents-tracks/commit/7e2fe443ebbdf59d3fe3d8a39dba8ea8bd847286))
+* **deps:** bump docker/setup-buildx-action from 4.2.0 to 4.3.0 ([#76](https://github.com/pavelpikta/lampa-torrents-tracks/issues/76)) ([82cc2e9](https://github.com/pavelpikta/lampa-torrents-tracks/commit/82cc2e9a537f5b4f037be65f1ffed3164872d6d9))
+* **release:** pin semantic-release plugins and update semantic version to 25.0.9 ([97f758a](https://github.com/pavelpikta/lampa-torrents-tracks/commit/97f758a133e07c5a74880525adf6854f4964958f))
+
 ## [2.1.12](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.11...v2.1.12) (2026-08-16)
 
 ## [2.1.11](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.10...v2.1.11) (2026-08-09)
