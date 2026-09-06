@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.14](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.13...v2.1.14) (2026-09-06)
+
+### CI/CD
+
+* **deps:** bump docker/setup-qemu-action from 4.2.0 to 4.3.0 ([#81](https://github.com/pavelpikta/lampa-torrents-tracks/issues/81)) ([df1d0c9](https://github.com/pavelpikta/lampa-torrents-tracks/commit/df1d0c96f0cd23595a4f1d366628ccbf3958423d))
+
 ## [2.1.13](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.12...v2.1.13) (2026-08-31)
 
 ### CI/CD
