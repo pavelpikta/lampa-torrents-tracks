@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.15](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.14...v2.1.15) (2026-09-20)
+
+### CI/CD
+
+* **deps:** bump docker/build-push-action from 7.3.0 to 7.4.0 ([#85](https://github.com/pavelpikta/lampa-torrents-tracks/issues/85)) ([7880db5](https://github.com/pavelpikta/lampa-torrents-tracks/commit/7880db522670b2500843276446dc4a14220038c8))
+* **deps:** bump docker/setup-buildx-action from 4.3.0 to 4.4.0 ([#84](https://github.com/pavelpikta/lampa-torrents-tracks/issues/84)) ([d63ea28](https://github.com/pavelpikta/lampa-torrents-tracks/commit/d63ea289ed7755fd24765e04c1dc5bd165598723))
+* **deps:** bump docker/setup-qemu-action from 4.3.0 to 4.4.0 ([#86](https://github.com/pavelpikta/lampa-torrents-tracks/issues/86)) ([fb9a6de](https://github.com/pavelpikta/lampa-torrents-tracks/commit/fb9a6de06382ebe55a9f06d1c37e45968868920a))
+
 ## [2.1.14](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.13...v2.1.14) (2026-09-06)
 
 ### CI/CD
