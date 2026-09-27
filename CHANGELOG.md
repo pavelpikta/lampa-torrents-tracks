@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.16](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.15...v2.1.16) (2026-09-27)
+
+### CI/CD
+
+* **deps:** bump docker/setup-buildx-action from 4.4.0 to 4.4.1 ([#88](https://github.com/pavelpikta/lampa-torrents-tracks/issues/88)) ([1794615](https://github.com/pavelpikta/lampa-torrents-tracks/commit/17946151c79690f672393ff75a37671cbe9904ee))
+
 ## [2.1.15](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.14...v2.1.15) (2026-09-20)
 
 ### CI/CD
