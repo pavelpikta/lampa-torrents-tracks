@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.17](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.16...v2.1.17) (2026-10-11)
+
+### CI/CD
+
+* **deps:** bump anchore/sbom-action from 0.24.2 to 0.24.3 ([#99](https://github.com/pavelpikta/lampa-torrents-tracks/issues/99)) ([0caddc0](https://github.com/pavelpikta/lampa-torrents-tracks/commit/0caddc0caec80b53c232a3243dccbe90cf6d4cf3))
+
 ## [2.1.16](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.15...v2.1.16) (2026-09-27)
 
 ### CI/CD
