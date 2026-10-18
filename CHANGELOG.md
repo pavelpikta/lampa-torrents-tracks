@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.18](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.17...v2.1.18) (2026-10-18)
+
+### CI/CD
+
+* **deps:** bump actions/setup-node from 7.0.0 to 7.1.0 ([#104](https://github.com/pavelpikta/lampa-torrents-tracks/issues/104)) ([73bb852](https://github.com/pavelpikta/lampa-torrents-tracks/commit/73bb852b1a6627a6af16e70723c15fa718ee22d6))
+* **deps:** bump actions/upload-artifact from 7.0.1 to 7.0.2 ([#103](https://github.com/pavelpikta/lampa-torrents-tracks/issues/103)) ([9f30b80](https://github.com/pavelpikta/lampa-torrents-tracks/commit/9f30b809e25871aba01246a670effe17bd6e655d))
+* **deps:** bump cycjimmy/semantic-release-action from 6.0.0 to 7.1.0 ([#105](https://github.com/pavelpikta/lampa-torrents-tracks/issues/105)) ([303c2fd](https://github.com/pavelpikta/lampa-torrents-tracks/commit/303c2fd10322d779ec19d59e2b1b8b7534e7d7ed))
+* **deps:** bump cycjimmy/semantic-release-action from 7.1.0 to 8.0.1 ([#108](https://github.com/pavelpikta/lampa-torrents-tracks/issues/108)) ([07088d0](https://github.com/pavelpikta/lampa-torrents-tracks/commit/07088d0ff0af4fa89646414d95d4e0c47d9ca74f))
+
 ## [2.1.17](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.16...v2.1.17) (2026-10-11)
 
 ### CI/CD
