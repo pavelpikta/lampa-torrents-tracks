@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.20](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.19...v2.1.20) (2026-11-01)
+
+### CI/CD
+
+* **deps:** bump cycjimmy/semantic-release-action from 8.1.2 to 8.1.3 ([#113](https://github.com/pavelpikta/lampa-torrents-tracks/issues/113)) ([75d336a](https://github.com/pavelpikta/lampa-torrents-tracks/commit/75d336a11ce2a69816d4cb333c12634a4a932485))
+
 ## [2.1.19](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.18...v2.1.19) (2026-10-25)
 
 ### CI/CD
