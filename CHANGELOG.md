@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.21](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.20...v2.1.21) (2026-11-08)
+
+### CI/CD
+
+* **deps:** bump cycjimmy/semantic-release-action from 8.1.3 to 8.1.4 ([#116](https://github.com/pavelpikta/lampa-torrents-tracks/issues/116)) ([19c10a1](https://github.com/pavelpikta/lampa-torrents-tracks/commit/19c10a1dbc182b27a62aaf02e29ed250d4bf54e1))
+* **deps:** bump docker/login-action from 4.6.0 to 4.7.0 ([#115](https://github.com/pavelpikta/lampa-torrents-tracks/issues/115)) ([a25cd07](https://github.com/pavelpikta/lampa-torrents-tracks/commit/a25cd078c9f4d880a82a14a1a5a860cea8239124))
+
 ## [2.1.20](https://github.com/pavelpikta/lampa-torrents-tracks/compare/v2.1.19...v2.1.20) (2026-11-01)
 
 ### CI/CD
